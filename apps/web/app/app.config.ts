@@ -4,7 +4,7 @@ export default defineAppConfig({
 	},
 	routes: {
 		settings: {
-			appearance: '/settings/appearance',
+			general: '/settings/general',
 		},
 	},
 	ui: {
@@ -149,8 +149,11 @@ export default defineAppConfig({
 			starFill: 'ph:star-fill',
 			settings: 'ph:gear-fine',
 			globe: 'ph:globe-simple',
-			appearance: 'ph:palette',
+			general: 'ph:palette',
 			colorMode: 'ph:circle-half',
+			// logos
+			googleLogo: 'ph:google-logo-bold',
+			githubLogo: 'ph:github-logo-bold',
 		},
 	},
 })

@@ -6,10 +6,14 @@
 		"backToApp": "Back to App",
 		"openAppMenu": "Open App Menu"
 	},
+	"auth": {
+		"loginTitle": "Welcome back",
+		"loginDescription": "Access your account to continue."
+	},
 	"settings": {
 		"label": "Settings",
-		"appearance": {
-			"label": "Appearance",
+		"general": {
+			"label": "general",
 			"languageAndTime": "Language & Time",
 			"language": "Language",
 			"languageSearchPlaceholder": "Search languages...",

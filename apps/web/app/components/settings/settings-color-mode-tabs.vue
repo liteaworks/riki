@@ -11,17 +11,17 @@ function update(val: 'light' | 'dark' | 'system') {
 const items = computed(() => [
 	{
 		value: 'light',
-		label: $t('settings.appearance.colorMode.light'),
+		label: $t('settings.general.colorMode.light'),
 		icon: appConfig.ui.icons.light,
 	},
 	{
 		value: 'dark',
-		label: $t('settings.appearance.colorMode.dark'),
+		label: $t('settings.general.colorMode.dark'),
 		icon: appConfig.ui.icons.dark,
 	},
 	{
 		value: 'system',
-		label: $t('settings.appearance.colorMode.system'),
+		label: $t('settings.general.colorMode.system'),
 		icon: appConfig.ui.icons.system,
 	},
 ])

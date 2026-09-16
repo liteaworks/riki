@@ -4,15 +4,10 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 const appConfig = useAppConfig()
 
 const items = computed<NavigationMenuItem[]>(() => [
-	// {
-	// 	label: $t('settings.general.label'),
-	// 	icon: appConfig.ui.icons.settings,
-	// 	to: appConfig.routes.settings.general,
-	// },
 	{
-		label: $t('settings.appearance.label'),
-		icon: appConfig.ui.icons.appearance,
-		to: appConfig.routes.settings.appearance,
+		label: $t('settings.general.label'),
+		icon: appConfig.ui.icons.settings,
+		to: appConfig.routes.settings.general,
 	},
 ])
 </script>

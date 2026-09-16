@@ -23,7 +23,11 @@ export default defineNuxtConfig({
 			scan: true,
 		},
 	},
-	ssr: false,
+	routeRules: {
+		'/auth/**': { appLayout: 'auth' },
+		'/settings/**': { appLayout: 'settings' },
+	},
+	ssr: true,
 	vite: {
 		clearScreen: false,
 		envPrefix: ['VITE_', 'TAURI_'],

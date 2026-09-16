@@ -8,7 +8,7 @@ const dropdownMenuItems = computed<DropdownMenuItem[][]>(() => [
 		{
 			label: $t('settings.label'),
 			icon: appConfig.ui.icons.settings,
-			to: appConfig.routes.settings.appearance,
+			to: appConfig.routes.settings.general,
 		},
 	],
 ])

@@ -3,7 +3,7 @@
 		<SettingsSidebar />
 		<div class="flex-1">
 			<div class="mx-auto max-w-3xl p-4">
-				<NuxtPage />
+				<slot />
 			</div>
 		</div>
 	</div>
