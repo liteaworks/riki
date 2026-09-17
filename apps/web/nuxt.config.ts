@@ -1,18 +1,8 @@
 import { defaultLocale, locales } from './i18n/locales'
 
 export default defineNuxtConfig({
-	modules: [
-		'@nuxt/ui',
-		'@nuxtjs/i18n',
-		'@nuxtjs/better-auth',
-		'@nuxthub/core',
-		'@vueuse/nuxt',
-		'@pinia/nuxt',
-	],
+	modules: ['@nuxt/ui', '@nuxtjs/i18n', '@vueuse/nuxt', '@pinia/nuxt'],
 	css: ['~/assets/css/main.css'],
-	hub: {
-		db: 'sqlite',
-	},
 	i18n: {
 		strategy: 'no_prefix',
 		defaultLocale,
