@@ -1,14 +1,30 @@
 {
 	"common": {
-		"searchPlaceholder": "Search..."
+		"searchPlaceholder": "Search...",
+		"required": "{label} is required",
+		"placeholder": "Enter {label}",
+		"invalid": "Enter a valid {label}",
+		"lengthBetween": "{label} must be {min}-{max} characters",
+		"actionFailed": "{action} failed"
 	},
 	"header": {
-		"backToApp": "Back to App",
-		"openAppMenu": "Open App Menu"
+		"backToApp": "Back to app",
+		"openAppMenu": "Open app menu"
 	},
 	"auth": {
-		"loginTitle": "Welcome back",
-		"loginDescription": "Access your account to continue."
+		"signIn": "Sign in",
+		"signOut": "Sign out",
+		"signUp": "Sign up",
+		"signInTitle": "Welcome back",
+		"signInDescription": "Access your account to continue.",
+		"signUpTitle": "Create your account",
+		"signUpDescription": "Get started with your new account.",
+		"identifier": "Email or username",
+		"email": "Email",
+		"username": "Username",
+		"name": "Name",
+		"password": "Password",
+		"orContinueWith": "or"
 	},
 	"settings": {
 		"label": "Settings",

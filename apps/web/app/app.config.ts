@@ -3,6 +3,10 @@ export default defineAppConfig({
 		name: 'Riki',
 	},
 	routes: {
+		auth: {
+			signIn: '/auth/sign-in',
+			signUp: '/auth/sign-up',
+		},
 		settings: {
 			general: '/settings/general',
 		},
@@ -148,6 +152,9 @@ export default defineAppConfig({
 			text: 'ph:text-t',
 			starFill: 'ph:star-fill',
 			settings: 'ph:gear-fine',
+			user: 'ph:user-circle',
+			signIn: 'ph:sign-in',
+			signOut: 'ph:sign-out',
 			globe: 'ph:globe-simple',
 			general: 'ph:palette',
 			colorMode: 'ph:circle-half',
