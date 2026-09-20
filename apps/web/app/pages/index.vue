@@ -12,14 +12,7 @@ const appConfig = useAppConfig()
 			<NoteListItem />
 		</div>
 		<div class="absolute bottom-4 left-1/2 z-50 -translate-x-1/2">
-			<UButton
-				:icon="appConfig.ui.icons.plus"
-				label="New"
-				color="primary"
-				variant="soft"
-				size="lg"
-				class="rounded-full"
-			/>
+			<NoteNewButton />
 		</div>
 	</div>
 	<ChatSidebar />

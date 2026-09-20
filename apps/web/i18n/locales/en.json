@@ -26,6 +26,16 @@
 		"password": "Password",
 		"orContinueWith": "or"
 	},
+	"note": {
+		"newNote": "New note",
+		"editorPlaceholder": "Write something...",
+		"send": "Send",
+		"attachImage": "Add image",
+		"attachAudio": "Record audio",
+		"attachLocation": "Add location",
+		"inbox": "Inbox",
+		"wordCount": "{count} characters"
+	},
 	"settings": {
 		"label": "Settings",
 		"general": {
