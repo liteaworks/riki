@@ -5,7 +5,7 @@
 		"close": "Close",
 		"toggle": "Toggle",
 		"searchPlaceholder": "Search...",
-		"searchPlaceholderWithLabel": "Search {label}...",
+		"searchLabelPlaceholder": "Search {label}...",
 		"required": "{label} is required",
 		"placeholder": "Enter {label}",
 		"invalid": "Enter a valid {label}",
@@ -44,10 +44,9 @@
 	"settings": {
 		"label": "Settings",
 		"preferences": {
-			"label": "preferences",
+			"label": "Preferences",
 			"general": "General",
 			"language": "Language",
-			"languageSearchPlaceholder": "Search languages...",
 			"color": "Color",
 			"colorMode": {
 				"label": "Color Mode",

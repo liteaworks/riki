@@ -1,0 +1,59 @@
+{
+	"common": {
+		"confirm": "确认",
+		"continue": "继续",
+		"close": "关闭",
+		"toggle": "切换",
+		"searchPlaceholder": "搜索…",
+		"searchLabelPlaceholder": "搜索{label}…",
+		"required": "{label}不能为空",
+		"placeholder": "请输入{label}",
+		"invalid": "请输入有效的{label}",
+		"lengthBetween": "{label}需为{min}至{max}位",
+		"actionFailed": "{action}失败"
+	},
+	"header": {
+		"backToApp": "返回应用",
+		"openAppMenu": "打开应用菜单"
+	},
+	"auth": {
+		"signIn": "登录",
+		"signOut": "退出登录",
+		"signUp": "注册",
+		"signInTitle": "欢迎回来",
+		"signInDescription": "请登录你的账号以继续",
+		"signUpTitle": "创建账号",
+		"signUpDescription": "创建新账号以开始使用",
+		"identifier": "邮箱或用户名",
+		"email": "邮箱",
+		"username": "用户名",
+		"name": "昵称",
+		"password": "密码",
+		"orContinueWith": "或"
+	},
+	"note": {
+		"newNote": "新筆記",
+		"editorPlaceholder": "写点什么…",
+		"send": "发送",
+		"attachImage": "添加图片",
+		"attachAudio": "录音",
+		"attachLocation": "添加地点",
+		"inbox": "未归类",
+		"wordCount": "{count} 字"
+	},
+	"settings": {
+		"label": "设置",
+		"preferences": {
+			"label": "偏好设置",
+			"general": "通用",
+			"language": "语言",
+			"color": "色调",
+			"colorMode": {
+				"label": "主题色",
+				"light": "浅色",
+				"dark": "深色",
+				"system": "跟随系统"
+			}
+		}
+	}
+}

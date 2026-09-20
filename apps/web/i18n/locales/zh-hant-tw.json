@@ -1,0 +1,59 @@
+{
+	"common": {
+		"confirm": "確認",
+		"continue": "繼續",
+		"close": "關閉",
+		"toggle": "切換",
+		"searchPlaceholder": "搜尋…",
+		"searchLabelPlaceholder": "搜尋{label}…",
+		"required": "{label}不能為空",
+		"placeholder": "請輸入{label}",
+		"invalid": "請輸入有效的{label}",
+		"lengthBetween": "{label}需為{min}至{max}位",
+		"actionFailed": "{action}失敗"
+	},
+	"header": {
+		"backToApp": "返回應用程式",
+		"openAppMenu": "開啟應用程式選單"
+	},
+	"auth": {
+		"signIn": "登入",
+		"signOut": "登出",
+		"signUp": "註冊",
+		"signInTitle": "歡迎回來",
+		"signInDescription": "請登入你的帳號以繼續",
+		"signUpTitle": "建立帳號",
+		"signUpDescription": "建立新帳號以開始使用",
+		"identifier": "電子郵件或使用者名稱",
+		"email": "電子郵件",
+		"username": "使用者名稱",
+		"name": "暱稱",
+		"password": "密碼",
+		"orContinueWith": "或"
+	},
+	"note": {
+		"newNote": "新筆記",
+		"editorPlaceholder": "寫點什麼…",
+		"send": "發送",
+		"attachImage": "新增圖片",
+		"attachAudio": "新增錄音",
+		"attachLocation": "新增地點",
+		"inbox": "未歸類",
+		"wordCount": "{count} 字"
+	},
+	"settings": {
+		"label": "設定",
+		"preferences": {
+			"label": "偏好設定",
+			"general": "一般",
+			"language": "語言",
+			"color": "色調",
+			"colorMode": {
+				"label": "主題色",
+				"light": "淺色",
+				"dark": "深色",
+				"system": "跟隨系統"
+			}
+		}
+	}
+}

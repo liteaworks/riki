@@ -1,22 +1,21 @@
 <script lang="ts" setup>
 import type { AvailableLocales } from '~~/i18n/locales'
 import { availableLocales } from '~~/i18n/locales'
-const { locale: currentLocale, locales } = useI18n()
+
+const { locale: currentLocale } = useI18n()
 
 const model = defineModel<AvailableLocales>()
 
 const processedLocales = computed(() => {
 	return availableLocales.map((locale) => {
-		const name = new Intl.DisplayNames([currentLocale.value.replace('_', '-')], {
+		const name = new Intl.DisplayNames(currentLocale.value, {
 			type: 'language',
 			languageDisplay: 'dialect',
 		}).of(locale.code)
+
 		return {
 			...locale,
-			displayName:
-				currentLocale.value === locale.code
-					? undefined
-					: (name ?? $t(`languages.${locale.key as string}`)),
+			displayName: currentLocale.value === locale.code ? undefined : name,
 		}
 	})
 })
@@ -29,14 +28,11 @@ const processedLocales = computed(() => {
 		label-key="name"
 		value-key="code"
 		description-key="displayName"
-		:search-input="{ placeholder: $t('settings.appearance.languageSearchPlaceholder') }"
+		:search-input="{
+			placeholder: $t('common.searchLabelPlaceholder', {
+				label: $t('settings.preferences.language'),
+			}),
+		}"
 		:ui="{ itemLabel: 'text-sm', itemDescription: 'text-xs' }"
-	>
-		<!-- <template #item-label="{ item }">
-			{{ item.name }}
-			<span class="text-muted">
-				{{ `- ${$t(`languages.${item.key as string}`)}` }}
-			</span>
-		</template> -->
-	</USelectMenu>
+	/>
 </template>
