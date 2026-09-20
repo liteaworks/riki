@@ -1,6 +1,11 @@
 {
 	"common": {
+		"confirm": "Confirm",
+		"continue": "Continue",
+		"close": "Close",
+		"toggle": "Toggle",
 		"searchPlaceholder": "Search...",
+		"searchPlaceholderWithLabel": "Search {label}...",
 		"required": "{label} is required",
 		"placeholder": "Enter {label}",
 		"invalid": "Enter a valid {label}",
@@ -38,9 +43,9 @@
 	},
 	"settings": {
 		"label": "Settings",
-		"general": {
-			"label": "general",
-			"languageAndTime": "Language & Time",
+		"preferences": {
+			"label": "preferences",
+			"general": "General",
 			"language": "Language",
 			"languageSearchPlaceholder": "Search languages...",
 			"color": "Color",

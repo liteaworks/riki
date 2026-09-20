@@ -5,9 +5,9 @@ const appConfig = useAppConfig()
 
 const items = computed<NavigationMenuItem[]>(() => [
 	{
-		label: $t('settings.general.label'),
+		label: $t('settings.preferences.label'),
 		icon: appConfig.ui.icons.settings,
-		to: appConfig.routes.settings.general,
+		to: appConfig.routes.settings.preferences,
 	},
 ])
 </script>
