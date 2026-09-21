@@ -10,7 +10,9 @@
 		"placeholder": "Enter {label}",
 		"invalid": "Enter a valid {label}",
 		"lengthBetween": "{label} must be {min}-{max} characters",
-		"actionFailed": "{action} failed"
+		"actionFailed": "{action} failed",
+		"noData": "No data",
+		"noMatch": "No matches found"
 	},
 	"header": {
 		"backToApp": "Back to app",

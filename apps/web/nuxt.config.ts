@@ -35,6 +35,7 @@ export default defineNuxtConfig({
 	},
 	ui: {
 		fonts: false,
+		prose: true,
 	},
 	devtools: {
 		enabled: true,

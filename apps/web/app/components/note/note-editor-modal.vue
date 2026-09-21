@@ -67,18 +67,13 @@ async function handleSend() {
 			<UEditorToolbar v-if="editor" :editor="editor" :items="toolbarItems" class="w-full" />
 		</template>
 		<template #body>
-			<ClientOnly>
-				<UEditor
-					ref="editorRef"
-					v-model="content"
-					content-type="markdown"
-					:placeholder="t('note.editorPlaceholder')"
-					class="min-h-48 w-full"
-				/>
-				<template #fallback>
-					<USkeleton class="h-48 w-full" />
-				</template>
-			</ClientOnly>
+			<UEditor
+				ref="editorRef"
+				v-model="content"
+				content-type="markdown"
+				:placeholder="t('note.editorPlaceholder')"
+				class="min-h-48 w-full"
+			/>
 		</template>
 		<template #footer>
 			<div class="flex w-full items-center gap-1">

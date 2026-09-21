@@ -10,7 +10,9 @@
 		"placeholder": "請輸入{label}",
 		"invalid": "請輸入有效嘅{label}",
 		"lengthBetween": "{label}要{min}到{max}位",
-		"actionFailed": "{action}失敗"
+		"actionFailed": "{action}失敗",
+		"noData": "冇資料",
+		"noMatch": "搵唔到匹配項目"
 	},
 	"header": {
 		"backToApp": "返翻應用程式",
@@ -52,7 +54,9 @@
 				"label": "主題色",
 				"light": "淺色",
 				"dark": "深色",
-				"system": "跟隨系統"
+				"system": "跟隨系統",
+				"switchToDark": "切換到深色模式",
+				"switchToLight": "切換到淺色模式"
 			}
 		}
 	}
