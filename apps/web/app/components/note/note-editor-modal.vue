@@ -31,7 +31,20 @@ const toolbarItems: EditorToolbarItem[][] = [
 ]
 
 const addItems = computed<DropdownMenuItem[][]>(() => [
-	[{ label: t('note.attachLocation'), icon: appConfig.ui.icons.mapPin, disabled: true }],
+	[
+		{
+			label: t('note.attachImage'),
+			icon: appConfig.ui.icons.image,
+		},
+		{
+			label: t('note.attachAudio'),
+			icon: appConfig.ui.icons.waveform,
+		},
+		{
+			label: t('note.attachLocation'),
+			icon: appConfig.ui.icons.mapPin,
+		},
+	],
 ])
 
 const actionItems = computed<DropdownMenuItem[][]>(() => [
@@ -44,7 +57,11 @@ async function handleSend() {
 	try {
 		const note = await $fetch('/api/notes', {
 			method: 'POST',
-			body: { content: content.value.trim(), spaceId: null },
+			body: {
+				content: content.value.trim(),
+				spaceId: null,
+				tagNames: extractTagNames(editor.value),
+			},
 		})
 		content.value = ''
 		open.value = false
@@ -73,7 +90,9 @@ async function handleSend() {
 				content-type="markdown"
 				:placeholder="t('note.editorPlaceholder')"
 				class="min-h-48 w-full"
-			/>
+			>
+				<NoteTagMenu :editor="editor" />
+			</UEditor>
 		</template>
 		<template #footer>
 			<div class="flex w-full items-center gap-1">
@@ -84,28 +103,6 @@ async function handleSend() {
 					<span class="inline-flex">
 						<UButton
 							:icon="appConfig.ui.icons.inbox"
-							color="neutral"
-							variant="ghost"
-							size="sm"
-							disabled
-						/>
-					</span>
-				</UTooltip>
-				<UTooltip :text="t('note.attachImage')">
-					<span class="inline-flex">
-						<UButton
-							:icon="appConfig.ui.icons.image"
-							color="neutral"
-							variant="ghost"
-							size="sm"
-							disabled
-						/>
-					</span>
-				</UTooltip>
-				<UTooltip :text="t('note.attachAudio')">
-					<span class="inline-flex">
-						<UButton
-							:icon="appConfig.ui.icons.waveform"
 							color="neutral"
 							variant="ghost"
 							size="sm"
