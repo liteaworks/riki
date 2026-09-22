@@ -1,6 +1,13 @@
 import * as z from 'zod'
 import type { notes, spaces, tags } from '#server/db/schemas/note-schema'
 
+export type Note = typeof notes.$inferSelect
+export type NewNote = typeof notes.$inferInsert
+export type Space = typeof spaces.$inferSelect
+export type NewSpace = typeof spaces.$inferInsert
+export type Tag = typeof tags.$inferSelect
+export type NewTag = typeof tags.$inferInsert
+
 export const noteVisibility = {
 	private: 'private',
 	public: 'public',
@@ -35,9 +42,23 @@ export const createNoteBodySchema = z.object({
 
 export type CreateNoteBody = z.output<typeof createNoteBodySchema>
 
-export type Note = typeof notes.$inferSelect
-export type NewNote = typeof notes.$inferInsert
-export type Space = typeof spaces.$inferSelect
-export type NewSpace = typeof spaces.$inferInsert
-export type Tag = typeof tags.$inferSelect
-export type NewTag = typeof tags.$inferInsert
+const noteCursorSchema = z
+	.string()
+	.regex(/^\d+:[^:]+$/)
+	.transform((value) => {
+		const separator = value.indexOf(':')
+		return {
+			createdAt: new Date(Number(value.slice(0, separator))),
+			id: value.slice(separator + 1),
+		}
+	})
+	.refine((cursor) => !Number.isNaN(cursor.createdAt.getTime()))
+
+export const listNotesQuerySchema = z.object({
+	limit: z.coerce.number().int().min(1).max(50).default(20),
+	cursor: noteCursorSchema.optional(),
+})
+
+export type ListNotesQuery = z.output<typeof listNotesQuerySchema>
+
+export type ListNotesResponse = { items: Note[]; nextCursor: string | null }

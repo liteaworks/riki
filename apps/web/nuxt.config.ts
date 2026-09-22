@@ -1,7 +1,7 @@
 import { defaultLocale, locales } from './i18n/locales'
 
 export default defineNuxtConfig({
-	modules: ['@nuxt/ui', '@nuxtjs/i18n', '@vueuse/nuxt', '@pinia/nuxt'],
+	modules: ['@nuxt/ui', '@nuxtjs/i18n', '@vueuse/nuxt', '@pinia/nuxt', '@comark/nuxt'],
 	css: ['~/assets/css/main.css'],
 	i18n: {
 		strategy: 'no_prefix',

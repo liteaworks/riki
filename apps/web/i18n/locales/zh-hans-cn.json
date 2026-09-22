@@ -41,7 +41,9 @@
 		"attachAudio": "录音",
 		"attachLocation": "添加地点",
 		"inbox": "未归类",
-		"wordCount": "{count} 字"
+		"wordCount": "{count} 字",
+		"createdAt": "创建于 {time}",
+		"updatedAt": "更新于 {time}"
 	},
 	"settings": {
 		"label": "设置",

@@ -31,6 +31,7 @@
 		"zod": "^4.6.5"
 	},
 	"devDependencies": {
+		"@comark/nuxt": "0.7.0",
 		"@iconify-json/ph": "^1.2.2",
 		"@nuxtjs/i18n": "^10.6.0",
 		"@tauri-apps/cli": "^2.11.4",

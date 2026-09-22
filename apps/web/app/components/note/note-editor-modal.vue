@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import type { DropdownMenuItem, EditorToolbarItem } from '@nuxt/ui'
+import type { Note } from '#shared/types/note'
+
+defineProps<{
+	note?: Note | null
+}>()
 
 const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits<{

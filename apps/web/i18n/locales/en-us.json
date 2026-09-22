@@ -41,7 +41,9 @@
 		"attachAudio": "Record audio",
 		"attachLocation": "Add location",
 		"inbox": "Inbox",
-		"wordCount": "{count} characters"
+		"wordCount": "{count} characters",
+		"createdAt": "Created {time}",
+		"updatedAt": "Updated {time}"
 	},
 	"settings": {
 		"label": "Settings",
