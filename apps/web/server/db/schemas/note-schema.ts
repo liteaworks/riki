@@ -1,22 +1,29 @@
 import { defineRelationsPart, sql } from 'drizzle-orm'
-import { sqliteTable, text, integer, index, primaryKey } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, index, primaryKey, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { user } from './auth-schema'
+import { newId } from '#shared/utils/id'
+import {
+	noteStatus,
+	noteStatusValues,
+	noteVisibility,
+	noteVisibilityValues,
+} from '#shared/types/note'
 
 export const notes = sqliteTable(
 	'notes',
 	{
-		id: text('id').primaryKey(),
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => newId()),
 		content: text('content').notNull(),
 		userId: text('user_id')
 			.notNull()
 			.references(() => user.id, { onDelete: 'cascade' }),
 		spaceId: text('space_id').references(() => spaces.id, { onDelete: 'set null' }),
-		visibility: text('visibility', { enum: ['public', 'protected', 'private'] })
+		visibility: text('visibility', { enum: noteVisibilityValues })
 			.notNull()
-			.default('private'),
-		status: text('status', { enum: ['normal', 'pinned', 'archived'] })
-			.notNull()
-			.default('normal'),
+			.default(noteVisibility.private),
+		status: text('status', { enum: noteStatusValues }).notNull().default(noteStatus.normal),
 		createdAt: integer('created_at', { mode: 'timestamp_ms' })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull(),
@@ -34,7 +41,9 @@ export const notes = sqliteTable(
 export const spaces = sqliteTable(
 	'spaces',
 	{
-		id: text('id').primaryKey(),
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => newId()),
 		name: text('name').notNull(),
 		userId: text('user_id')
 			.notNull()
@@ -50,17 +59,29 @@ export const spaces = sqliteTable(
 	(table) => [index('spaces_userId_idx').on(table.userId)],
 )
 
-export const tags = sqliteTable('tags', {
-	id: text('id').primaryKey(),
-	name: text('name').notNull().unique(),
-	createdAt: integer('created_at', { mode: 'timestamp_ms' })
-		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-		.notNull(),
-	updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
-		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-		.$onUpdate(() => new Date())
-		.notNull(),
-})
+export const tags = sqliteTable(
+	'tags',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => newId()),
+		name: text('name').notNull(),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		createdAt: integer('created_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+		updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.$onUpdate(() => new Date())
+			.notNull(),
+	},
+	(table) => [
+		uniqueIndex('tags_user_name_lower_unique').on(table.userId, sql`lower(${table.name})`),
+		index('tags_userId_idx').on(table.userId),
+	],
+)
 
 export const noteTags = sqliteTable(
 	'note_tags',
@@ -88,6 +109,10 @@ export const appRelations = defineRelationsPart({ user, spaces, tags, noteTags, 
 			from: r.user.id,
 			to: r.notes.userId,
 		}),
+		tags: r.many.tags({
+			from: r.user.id,
+			to: r.tags.userId,
+		}),
 	},
 	space: {
 		user: r.one.user({
@@ -114,6 +139,10 @@ export const appRelations = defineRelationsPart({ user, spaces, tags, noteTags, 
 		}),
 	},
 	tag: {
+		user: r.one.user({
+			from: r.tags.userId,
+			to: r.user.id,
+		}),
 		note: r.many.notes({
 			from: r.tags.id,
 			to: r.noteTags.tagId,

@@ -1,0 +1,43 @@
+import * as z from 'zod'
+import type { notes, spaces, tags } from '#server/db/schemas/note-schema'
+
+export const noteVisibility = {
+	private: 'private',
+	public: 'public',
+	protected: 'protected',
+} as const
+export type NoteVisibility = (typeof noteVisibility)[keyof typeof noteVisibility]
+export const noteVisibilityValues = Object.values(noteVisibility) as [
+	NoteVisibility,
+	...NoteVisibility[],
+]
+
+export const noteStatus = {
+	normal: 'normal',
+	pinned: 'pinned',
+	archived: 'archived',
+} as const
+export type NoteStatus = (typeof noteStatus)[keyof typeof noteStatus]
+export const noteStatusValues = Object.values(noteStatus) as [NoteStatus, ...NoteStatus[]]
+
+export const createNoteBodySchema = z.object({
+	content: z.string().trim().min(1),
+	spaceId: z
+		.string()
+		.trim()
+		.min(1)
+		.nullish()
+		.transform((value) => value ?? null),
+	tagNames: z.array(z.string().trim().min(1)).optional(),
+	visibility: z.enum(noteVisibility).default(noteVisibility.private),
+	status: z.enum(noteStatus).default(noteStatus.normal),
+})
+
+export type CreateNoteBody = z.output<typeof createNoteBodySchema>
+
+export type Note = typeof notes.$inferSelect
+export type NewNote = typeof notes.$inferInsert
+export type Space = typeof spaces.$inferSelect
+export type NewSpace = typeof spaces.$inferInsert
+export type Tag = typeof tags.$inferSelect
+export type NewTag = typeof tags.$inferInsert
