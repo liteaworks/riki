@@ -3,10 +3,9 @@ import { mentionChipClass } from '~/theme/ui'
 
 defineProps<{
 	label?: string
-	char?: string
 }>()
 </script>
 
 <template>
-	<span :class="mentionChipClass">{{ char }}{{ label }}</span>
+	<span :class="mentionChipClass">{{ `#${label}` }}</span>
 </template>

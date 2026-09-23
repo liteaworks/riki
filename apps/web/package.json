@@ -21,6 +21,7 @@
 		"@tauri-apps/api": "^2.11.1",
 		"@tauri-apps/plugin-opener": "^2.5.4",
 		"@tauri-store/pinia": "^5.0.2",
+		"@tiptap/extension-mention": "^3.29.2",
 		"better-auth": "^1.7.4",
 		"drizzle-orm": "1.0.0-rc.4",
 		"nanoid": "^6.0.1",
