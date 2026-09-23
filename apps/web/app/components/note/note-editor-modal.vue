@@ -2,7 +2,7 @@
 import type { DropdownMenuItem, EditorToolbarItem } from '@nuxt/ui'
 import type { Note } from '#shared/types/note'
 
-defineProps<{
+const props = defineProps<{
 	note?: Note | null
 }>()
 
@@ -17,6 +17,13 @@ const appConfig = useAppConfig()
 
 const content = ref('')
 const sending = ref(false)
+
+watch(
+	() => open.value,
+	(isOpen) => {
+		if (isOpen) content.value = props.note?.content ?? ''
+	},
+)
 
 const editorRef = useTemplateRef<any>('editorRef')
 const editor = computed(() => editorRef.value?.editor)

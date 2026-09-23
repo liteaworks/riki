@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import { LazyNoteEditorModal } from '#components'
-
 const appConfig = useAppConfig()
-const overlay = useOverlay()
-
-const modal = overlay.create(LazyNoteEditorModal)
 </script>
 
 <template>
@@ -15,6 +10,5 @@ const modal = overlay.create(LazyNoteEditorModal)
 		variant="soft"
 		size="lg"
 		class="rounded-full"
-		@click="modal.open"
 	/>
 </template>
