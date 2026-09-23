@@ -63,6 +63,7 @@ export const iconsTheme = {
 	mapPin: 'ph:map-pin',
 	inbox: 'ph:tray',
 	link: 'ph:link',
+	trash: 'ph:trash',
 	settings: 'ph:gear-fine',
 	globe: 'ph:globe-simple',
 	appearance: 'ph:palette',

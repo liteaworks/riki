@@ -65,6 +65,19 @@ export const uiTheme = {
 			title: 'text-sm font-normal',
 		},
 	},
+	modal: {
+		slots: {
+			overlay: 'backdrop-blur-xs',
+			footer: 'bg-muted dark:bg-muted/20',
+		},
+		variants: {
+			overlay: {
+				true: {
+					overlay: 'bg-black/10 dark:bg-black/20',
+				},
+			},
+		},
+	},
 	calendar: {
 		variants: {
 			color: {

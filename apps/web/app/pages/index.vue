@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { notes, openComposer } = useNotes()
+const { notes, openComposer, removeNote } = useNotes()
 </script>
 
 <template>
@@ -13,7 +13,7 @@ const { notes, openComposer } = useNotes()
 			:virtualize="{ gap: 8, lanes: 3, estimateSize: 200 }"
 			class="size-full p-2"
 		>
-			<NoteListItem :note="item" @select="openComposer" />
+			<NoteListItem :note="item" @select="openComposer" @deleted="removeNote" />
 		</UScrollArea>
 		<div class="absolute bottom-4 left-1/2 z-50 -translate-x-1/2">
 			<NoteNewButton @click="openComposer" />

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { NoteLink, NoteTag } from '#components'
+import type { ContextMenuItem } from '@nuxt/ui'
+import { LazyDialogModal, NoteLink, NoteTag } from '#components'
 import type { Note } from '#shared/types/note'
 
 const props = defineProps<{
@@ -8,7 +9,49 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	select: [note: Note]
+	deleted: [id: string]
 }>()
+
+const { t } = useI18n()
+const toast = useToast()
+const overlay = useOverlay()
+const appConfig = useAppConfig()
+
+const confirmDialog = overlay.create(LazyDialogModal)
+
+const menuItems = computed<ContextMenuItem[][]>(() => [[
+	{
+		label: t('note.delete'),
+		icon: appConfig.ui.icons.trash,
+		color: 'error',
+		onSelect: () => openDeleteDialog(),
+	},
+]])
+
+function openDeleteDialog() {
+	confirmDialog.open({
+		title: t('note.deleteTitle'),
+		description: t('note.deleteDescription'),
+		icon: appConfig.ui.icons.trash,
+		destructive: true,
+		onConfirm: () => {
+			void handleDelete()
+		},
+	})
+}
+
+async function handleDelete() {
+	try {
+		await $fetch(`/api/notes/${props.note.id}`, { method: 'DELETE' })
+		emit('deleted', props.note.id)
+	} catch (error) {
+		toast.add({
+			title: t('common.actionFailed', { action: t('note.delete') }),
+			description: error instanceof Error ? error.message : undefined,
+			color: 'error',
+		})
+	}
+}
 
 const markdownComponents = { a: NoteLink, tag: NoteTag }
 
@@ -27,10 +70,11 @@ const absoluteHint = computed(() => {
 </script>
 
 <template>
-	<div
-		class="group/note-item-card flex w-full cursor-pointer flex-col rounded-2xl bg-muted p-1 select-text dark:bg-muted/50"
-		@click="emit('select', props.note)"
-	>
+	<UContextMenu :items="menuItems" :ui="{ content: 'w-48' }">
+		<div
+			class="group/note-item-card flex w-full cursor-pointer flex-col rounded-2xl bg-muted p-1 select-text dark:bg-muted/50"
+			@click="emit('select', props.note)"
+		>
 		<article class="h-full rounded-xl bg-default p-2 py-1">
 			<Markdown :value="props.note.content" :components="markdownComponents" />
 		</article>
@@ -41,5 +85,6 @@ const absoluteHint = computed(() => {
 				</UTooltip>
 			</div>
 		</div>
-	</div>
+		</div>
+	</UContextMenu>
 </template>

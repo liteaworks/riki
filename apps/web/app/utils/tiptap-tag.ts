@@ -39,9 +39,9 @@ function needsSpace(context?: TagRenderContext): boolean {
 	return !!last && !' \t\n*_['.includes(last)
 }
 
-function renderTag(node: { attrs?: Record<string, unknown> }, context?: TagRenderContext): string {
+function renderTag(node: { attrs?: Record<string, unknown> }, ...rest: unknown[]): string {
 	const label = node.attrs?.label
-	const prefix = needsSpace(context) ? ' ' : ''
+	const prefix = needsSpace(rest[1] as TagRenderContext | undefined) ? ' ' : ''
 
 	return `${prefix}:tag{label="${escape(typeof label === 'string' ? label : '')}"}`
 }

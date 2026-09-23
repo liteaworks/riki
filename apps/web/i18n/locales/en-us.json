@@ -3,6 +3,7 @@
 		"confirm": "Confirm",
 		"continue": "Continue",
 		"close": "Close",
+		"cancel": "Cancel",
 		"toggle": "Toggle",
 		"searchPlaceholder": "Search...",
 		"searchLabelPlaceholder": "Search {label}...",
@@ -43,7 +44,10 @@
 		"inbox": "Inbox",
 		"wordCount": "{count} characters",
 		"createdAt": "Created {time}",
-		"updatedAt": "Updated {time}"
+		"updatedAt": "Updated {time}",
+		"delete": "Delete",
+		"deleteTitle": "Delete note",
+		"deleteDescription": "Are you sure you want to delete this note? This action cannot be undone."
 	},
 	"settings": {
 		"label": "Settings",

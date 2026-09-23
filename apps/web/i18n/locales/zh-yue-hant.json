@@ -3,6 +3,7 @@
 		"confirm": "確定",
 		"continue": "繼續",
 		"close": "閂",
+		"cancel": "取消",
 		"toggle": "切換",
 		"searchPlaceholder": "搵…",
 		"searchLabelPlaceholder": "搵{label}…",
@@ -43,7 +44,10 @@
 		"inbox": "未歸類",
 		"wordCount": "{count} 個字",
 		"createdAt": "建立於 {time}",
-		"updatedAt": "更新於 {time}"
+		"updatedAt": "更新於 {time}",
+		"delete": "刪除",
+		"deleteTitle": "刪除筆記",
+		"deleteDescription": "確定要刪除呢條筆記嗎？呢個動作冇得還原。"
 	},
 	"settings": {
 		"label": "設定",

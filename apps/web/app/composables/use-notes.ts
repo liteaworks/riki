@@ -37,6 +37,10 @@ export function useNotes() {
 		scrollArea.value?.virtualizer?.scrollToIndex(0, { align: 'start' })
 	}
 
+	function removeNote(id: string) {
+		notes.value = notes.value.filter((note) => note.id !== id)
+	}
+
 	function openComposer(note?: Note) {
 		editorModal.open({ note: note ?? null, onCreated: handleCreated })
 	}
@@ -50,5 +54,5 @@ export function useNotes() {
 		)
 	})
 
-	return { notes, openComposer }
+	return { notes, openComposer, removeNote }
 }
