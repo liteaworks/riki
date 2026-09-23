@@ -1,6 +1,9 @@
 import type { TVConfig } from '@nuxt/ui'
 import type * as ui from '#build/ui'
 
+export const mentionChipClass =
+	'mention mx-0.5 inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline text-xs font-medium whitespace-nowrap text-primary'
+
 const selectSlots = {
 	slots: {
 		content: 'min-w-fit',

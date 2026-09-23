@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DropdownMenuItem, EditorToolbarItem } from '@nuxt/ui'
 import type { Note } from '#shared/types/note'
+import { mentionChipClass } from '~/theme/ui'
 
 const props = defineProps<{
 	note?: Note | null
@@ -101,6 +102,7 @@ async function handleSend() {
 				v-model="content"
 				content-type="markdown"
 				:placeholder="t('note.editorPlaceholder')"
+				:mention="{ HTMLAttributes: { class: mentionChipClass } }"
 				class="min-h-48 w-full"
 			>
 				<NoteTagMenu :editor="editor" />

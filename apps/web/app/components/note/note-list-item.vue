@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { NoteMention } from '#components'
 import type { Note } from '#shared/types/note'
 
 const props = defineProps<{
@@ -8,6 +9,9 @@ const props = defineProps<{
 const emit = defineEmits<{
 	select: [note: Note]
 }>()
+
+const markdownPlugins = [mentionPlugin()]
+const markdownComponents = { mention: NoteMention }
 
 const { locale } = useI18n()
 
@@ -29,7 +33,11 @@ const absoluteHint = computed(() => {
 		@click="emit('select', props.note)"
 	>
 		<article class="h-full rounded-xl bg-default p-2 py-1">
-			<Markdown :value="props.note.content" />
+			<Markdown
+				:value="props.note.content"
+				:plugins="markdownPlugins"
+				:components="markdownComponents"
+			/>
 		</article>
 		<div class="flex items-center justify-between gap-2 pl-2 text-xs text-muted sm:py-1 sm:text-sm">
 			<div class="flex gap-1 truncate">

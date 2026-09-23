@@ -1,2 +1,2 @@
-export { uiTheme } from './ui'
-export { iconsTheme } from './icons'
+export * from './ui'
+export * from './icons'
