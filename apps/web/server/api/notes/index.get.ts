@@ -1,31 +1,17 @@
 import { db } from '#server/utils/db'
-import { auth } from '#server/utils/auth'
 import { notes } from '#server/db/schemas'
 import { listNotesQuerySchema } from '#shared/types/note'
+import { requireUser } from '#server/utils/session'
+import { readQueryZod } from '#server/utils/validation'
 import { and, desc, eq, lt, or } from 'drizzle-orm'
-import { z } from 'zod'
 
 export function encodeNoteCursor(createdAt: Date, id: string): string {
 	return `${createdAt.getTime()}:${id}`
 }
 
 export default defineEventHandler(async (event) => {
-	const session = await auth.api.getSession({
-		headers: event.headers,
-	})
-	if (!session?.user?.id) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
-
-	const query = await getValidatedQuery(event, (data: unknown) => {
-		const result = listNotesQuerySchema.safeParse(data)
-		if (!result.success) {
-			throw createError({
-				statusCode: 400,
-				statusMessage: 'Validation failed',
-				data: z.flattenError(result.error),
-			})
-		}
-		return result.data
-	})
+	const user = await requireUser(event)
+	const query = await readQueryZod(event, listNotesQuerySchema)
 
 	const cursorFilter = query.cursor
 		? or(
@@ -37,7 +23,7 @@ export default defineEventHandler(async (event) => {
 	const rows = await db
 		.select()
 		.from(notes)
-		.where(and(eq(notes.userId, session.user.id), cursorFilter))
+		.where(and(eq(notes.userId, user.id), cursorFilter))
 		.orderBy(desc(notes.createdAt), desc(notes.id))
 		.limit(query.limit + 1)
 
