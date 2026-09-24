@@ -29,12 +29,20 @@ const menuItems = computed<ContextMenuItem[][]>(() => [
 		{
 			label: isPinned.value ? t('note.unpin') : t('note.pin'),
 			icon: appConfig.ui.icons.pin,
-			onSelect: () => toggleStatus(isPinned.value ? noteStatus.normal : noteStatus.pinned, isPinned.value ? t('note.unpin') : t('note.pin')),
+			onSelect: () =>
+				toggleStatus(
+					isPinned.value ? noteStatus.normal : noteStatus.pinned,
+					isPinned.value ? t('note.unpin') : t('note.pin'),
+				),
 		},
 		{
 			label: isArchived.value ? t('note.unarchive') : t('note.archive'),
 			icon: appConfig.ui.icons.archive,
-			onSelect: () => toggleStatus(isArchived.value ? noteStatus.normal : noteStatus.archived, isArchived.value ? t('note.unarchive') : t('note.archive')),
+			onSelect: () =>
+				toggleStatus(
+					isArchived.value ? noteStatus.normal : noteStatus.archived,
+					isArchived.value ? t('note.unarchive') : t('note.archive'),
+				),
 		},
 	],
 	[
@@ -105,21 +113,23 @@ const absoluteHint = computed(() => {
 </script>
 
 <template>
-	<UContextMenu :items="menuItems" :ui="{ content: 'w-48' }">
+	<UContextMenu :items="menuItems">
 		<div
 			class="group/note-item-card flex w-full cursor-pointer flex-col rounded-2xl bg-muted p-1 select-text dark:bg-muted/50"
 			@click="emit('select', props.note)"
 		>
-		<article class="h-full rounded-xl bg-default p-2 py-1">
-			<Markdown :value="props.note.content" :components="markdownComponents" />
-		</article>
-		<div class="flex items-center justify-between gap-2 pl-2 text-xs text-muted sm:py-1 sm:text-sm">
-			<div class="flex gap-1 truncate">
-				<UTooltip :text="absoluteHint" :ui="{ content: 'whitespace-pre-line' }">
-					<span>{{ relativeTime }}</span>
-				</UTooltip>
+			<article class="h-full rounded-xl bg-default p-2 py-1">
+				<Markdown :value="props.note.content" :components="markdownComponents" />
+			</article>
+			<div
+				class="flex items-center justify-between gap-2 pl-2 text-xs text-muted sm:py-1 sm:text-sm"
+			>
+				<div class="flex gap-1 truncate">
+					<UTooltip :text="absoluteHint" :ui="{ content: 'whitespace-pre-line' }">
+						<span>{{ relativeTime }}</span>
+					</UTooltip>
+				</div>
 			</div>
-		</div>
 		</div>
 	</UContextMenu>
 </template>

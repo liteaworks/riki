@@ -10,6 +10,7 @@ const props = defineProps<{
 const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits<{
 	created: [note: unknown]
+	updated: [note: Note]
 }>()
 
 const { t } = useI18n()
@@ -24,6 +25,7 @@ watch(
 	(isOpen) => {
 		if (isOpen) content.value = props.note?.content ?? ''
 	},
+	{ immediate: true },
 )
 
 const editorRef = useTemplateRef<any>('editorRef')
@@ -68,17 +70,29 @@ async function handleSend() {
 	if (isEmpty.value || sending.value) return
 	sending.value = true
 	try {
-		const note = await $fetch('/api/notes', {
-			method: 'POST',
-			body: {
-				content: content.value.trim(),
-				spaceId: null,
-				tagNames: extractTagNames(editor.value),
-			},
-		})
+		const trimmed = content.value.trim()
+		if (props.note?.id) {
+			const updated = await $fetch<Note>(`/api/notes/${props.note.id}`, {
+				method: 'PATCH',
+				body: {
+					content: trimmed,
+					tagNames: extractTagNames(editor.value),
+				},
+			})
+			emit('updated', updated)
+		} else {
+			const note = await $fetch('/api/notes', {
+				method: 'POST',
+				body: {
+					content: trimmed,
+					spaceId: null,
+					tagNames: extractTagNames(editor.value),
+				},
+			})
+			emit('created', note)
+		}
 		content.value = ''
 		open.value = false
-		emit('created', note)
 	} catch (error) {
 		toast.add({
 			title: t('common.actionFailed', { action: t('note.send') }),
@@ -126,7 +140,7 @@ async function handleSend() {
 					</span>
 				</UTooltip>
 				<UFieldGroup size="sm" class="ml-auto">
-					<UButton :label="t('note.send')" variant="soft" :loading="sending" @click="handleSend" />
+					<UButton :label="props.note?.id ? t('note.save') : t('note.send')" variant="soft" :loading="sending" @click="handleSend" />
 					<UDropdownMenu :items="actionItems" :content="{ align: 'end', side: 'top' }">
 						<UButton :icon="appConfig.ui.icons.chevronDown" variant="soft" />
 					</UDropdownMenu>

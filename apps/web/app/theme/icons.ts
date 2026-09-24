@@ -63,7 +63,7 @@ export const iconsTheme = {
 	mapPin: 'ph:map-pin',
 	inbox: 'ph:tray',
 	link: 'ph:link',
-	trash: 'ph:trash',
+	trash: 'ph:trash-simple',
 	pin: 'ph:push-pin',
 	archive: 'ph:archive',
 	settings: 'ph:gear-fine',

@@ -47,7 +47,7 @@ export function useNotes() {
 	}
 
 	function openComposer(note?: Note) {
-		editorModal.open({ note: note ?? null, onCreated: handleCreated })
+		editorModal.open({ note: note ?? null, onCreated: handleCreated, onUpdated: updateNote })
 	}
 
 	onMounted(() => {

@@ -1,7 +1,8 @@
 import { db } from '#server/utils/db'
 import { auth } from '#server/utils/auth'
-import { notes } from '#server/db/schemas'
+import { noteTags, notes } from '#server/db/schemas'
 import { updateNoteBodySchema } from '#shared/types/note'
+import { dedupeTagNames, ensureTags, resolveTagIds, tagLinkInserts } from '#server/utils/note-tags'
 import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
 
@@ -28,10 +29,23 @@ export default defineEventHandler(async (event) => {
 
 	const [updated] = await db
 		.update(notes)
-		.set({ status: body.status })
+		.set({
+			...(body.content !== undefined && { content: body.content }),
+			...(body.status !== undefined && { status: body.status }),
+		})
 		.where(and(eq(notes.id, id), eq(notes.userId, session.user.id)))
 		.returning()
 	if (!updated) throw createError({ statusCode: 404, statusMessage: 'Note not found' })
+
+	if (body.tagNames !== undefined) {
+		const tagNames = dedupeTagNames(body.tagNames)
+		await ensureTags(session.user.id, tagNames)
+		const tagIds = await resolveTagIds(session.user.id, tagNames)
+		await db.batch([
+			db.delete(noteTags).where(eq(noteTags.noteId, id)),
+			...tagLinkInserts(id, tagIds),
+		])
+	}
 
 	return updated
 })

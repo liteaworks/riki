@@ -42,9 +42,15 @@ export const createNoteBodySchema = z.object({
 
 export type CreateNoteBody = z.output<typeof createNoteBodySchema>
 
-export const updateNoteBodySchema = z.object({
-	status: z.enum(noteStatus),
-})
+export const updateNoteBodySchema = z
+	.object({
+		content: z.string().trim().min(1).optional(),
+		tagNames: z.array(z.string().trim().min(1)).optional(),
+		status: z.enum(noteStatus).optional(),
+	})
+	.refine((body) => body.content !== undefined || body.tagNames !== undefined || body.status !== undefined, {
+		message: 'Empty update',
+	})
 
 export type UpdateNoteBody = z.output<typeof updateNoteBodySchema>
 
