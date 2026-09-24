@@ -27,11 +27,8 @@ withDefaults(
 				}"
 			/>
 			<div v-else class="flex items-center justify-between">
-				<div class="flex items-center gap-2">
-					<LayoutDropdownMenu />
-					<span class="text-sm">{{ appConfig.app.name }}</span>
-				</div>
-				<UDashboardSearchButton collapsed />
+				<LayoutDropdownMenu />
+				<NoteNewButton variant="ghost" />
 			</div>
 		</template>
 		<slot />

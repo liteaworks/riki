@@ -44,13 +44,6 @@ const dropdownMenuItems = computed<DropdownMenuItem[][]>(() => {
 		]
 	}
 	return [
-		[
-			{
-				label: user.value.name,
-				avatar: { src: user.value.image ?? undefined, alt: user.value.name },
-				class: 'truncate',
-			},
-		],
 		baseItems.value,
 		[
 			{
@@ -64,8 +57,17 @@ const dropdownMenuItems = computed<DropdownMenuItem[][]>(() => {
 </script>
 
 <template>
-	<UDropdownMenu :items="dropdownMenuItems" :ui="{ content: 'w-3xs' }">
-		<UTooltip :text="$t('header.openAppMenu')">
+	<UDropdownMenu :items="dropdownMenuItems">
+		<UButton
+			v-if="user"
+			:avatar="{ src: user.image ?? undefined, alt: user.name }"
+			:label="user.name"
+			color="neutral"
+			variant="ghost"
+			class="max-w-36"
+			:ui="{ label: 'truncate' }"
+		/>
+		<UTooltip v-else :text="$t('header.openAppMenu')">
 			<UButton :icon="appConfig.ui.icons.menu" color="neutral" variant="ghost" />
 		</UTooltip>
 	</UDropdownMenu>
