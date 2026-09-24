@@ -48,6 +48,7 @@ function renderTag(node: { attrs?: Record<string, unknown> }, ...rest: unknown[]
 
 export const tagMention = Mention.extend({
 	markdownTokenizer: { name: 'mention', level: 'inline', start: startOfTag, tokenize: tokenizeTag },
+	parseMarkdown: (token: any, h: any) => h.createNode('mention', { mentionSuggestionChar: '#', ...token.attributes }),
 	renderMarkdown: renderTag,
 }).configure({
 	HTMLAttributes: { class: mentionChipClass },
