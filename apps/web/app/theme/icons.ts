@@ -64,6 +64,8 @@ export const iconsTheme = {
 	inbox: 'ph:tray',
 	link: 'ph:link',
 	trash: 'ph:trash',
+	pin: 'ph:push-pin',
+	archive: 'ph:archive',
 	settings: 'ph:gear-fine',
 	globe: 'ph:globe-simple',
 	appearance: 'ph:palette',

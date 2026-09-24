@@ -42,6 +42,12 @@ export const createNoteBodySchema = z.object({
 
 export type CreateNoteBody = z.output<typeof createNoteBodySchema>
 
+export const updateNoteBodySchema = z.object({
+	status: z.enum(noteStatus),
+})
+
+export type UpdateNoteBody = z.output<typeof updateNoteBodySchema>
+
 const noteCursorSchema = z
 	.string()
 	.regex(/^\d+:[^:]+$/)

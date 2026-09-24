@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { ContextMenuItem } from '@nuxt/ui'
 import { LazyDialogModal, NoteLink, NoteTag } from '#components'
-import type { Note } from '#shared/types/note'
+import { noteStatus } from '#shared/types/note'
+import type { Note, NoteStatus } from '#shared/types/note'
 
 const props = defineProps<{
 	note: Note
@@ -9,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	select: [note: Note]
+	updated: [note: Note]
 	deleted: [id: string]
 }>()
 
@@ -19,14 +21,47 @@ const appConfig = useAppConfig()
 
 const confirmDialog = overlay.create(LazyDialogModal)
 
-const menuItems = computed<ContextMenuItem[][]>(() => [[
-	{
-		label: t('note.delete'),
-		icon: appConfig.ui.icons.trash,
-		color: 'error',
-		onSelect: () => openDeleteDialog(),
-	},
-]])
+const isPinned = computed(() => props.note.status === noteStatus.pinned)
+const isArchived = computed(() => props.note.status === noteStatus.archived)
+
+const menuItems = computed<ContextMenuItem[][]>(() => [
+	[
+		{
+			label: isPinned.value ? t('note.unpin') : t('note.pin'),
+			icon: appConfig.ui.icons.pin,
+			onSelect: () => toggleStatus(isPinned.value ? noteStatus.normal : noteStatus.pinned, isPinned.value ? t('note.unpin') : t('note.pin')),
+		},
+		{
+			label: isArchived.value ? t('note.unarchive') : t('note.archive'),
+			icon: appConfig.ui.icons.archive,
+			onSelect: () => toggleStatus(isArchived.value ? noteStatus.normal : noteStatus.archived, isArchived.value ? t('note.unarchive') : t('note.archive')),
+		},
+	],
+	[
+		{
+			label: t('note.delete'),
+			icon: appConfig.ui.icons.trash,
+			color: 'error',
+			onSelect: () => openDeleteDialog(),
+		},
+	],
+])
+
+async function toggleStatus(status: NoteStatus, action: string) {
+	try {
+		const updated = await $fetch<Note>(`/api/notes/${props.note.id}`, {
+			method: 'PATCH',
+			body: { status },
+		})
+		emit('updated', updated)
+	} catch (error) {
+		toast.add({
+			title: t('common.actionFailed', { action }),
+			description: error instanceof Error ? error.message : undefined,
+			color: 'error',
+		})
+	}
+}
 
 function openDeleteDialog() {
 	confirmDialog.open({

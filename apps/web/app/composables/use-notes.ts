@@ -41,6 +41,11 @@ export function useNotes() {
 		notes.value = notes.value.filter((note) => note.id !== id)
 	}
 
+	function updateNote(note: Note) {
+		const index = notes.value.findIndex((item) => item.id === note.id)
+		if (index !== -1) notes.value[index] = note
+	}
+
 	function openComposer(note?: Note) {
 		editorModal.open({ note: note ?? null, onCreated: handleCreated })
 	}
@@ -54,5 +59,5 @@ export function useNotes() {
 		)
 	})
 
-	return { notes, openComposer, removeNote }
+	return { notes, openComposer, removeNote, updateNote }
 }

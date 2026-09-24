@@ -47,7 +47,11 @@
 		"updatedAt": "更新於 {time}",
 		"delete": "刪除",
 		"deleteTitle": "刪除筆記",
-		"deleteDescription": "確定要刪除呢條筆記嗎？呢個動作冇得還原。"
+		"deleteDescription": "確定要刪除呢條筆記嗎？呢個動作冇得還原。",
+		"pin": "置頂",
+		"unpin": "取消置頂",
+		"archive": "封存",
+		"unarchive": "取消封存"
 	},
 	"settings": {
 		"label": "設定",

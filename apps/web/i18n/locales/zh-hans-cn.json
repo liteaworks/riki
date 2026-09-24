@@ -47,7 +47,11 @@
 		"updatedAt": "更新于 {time}",
 		"delete": "删除",
 		"deleteTitle": "删除笔记",
-		"deleteDescription": "确定要删除这条笔记吗？此操作无法撤销。"
+		"deleteDescription": "确定要删除这条笔记吗？此操作无法撤销。",
+		"pin": "置顶",
+		"unpin": "取消置顶",
+		"archive": "归档",
+		"unarchive": "取消归档"
 	},
 	"settings": {
 		"label": "设置",
