@@ -134,7 +134,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
 				>
 					<template #spaces-trailing>
 						<div
-							class="-my-0.5 -mr-1.5 flex opacity-0 transition-opacity pointer-events-none group-hover/sidebar:pointer-events-auto group-hover/sidebar:opacity-100 group-data-[state=collapsed]/sidebar:hidden"
+							class="pointer-events-none -my-0.5 -mr-1.5 flex opacity-0 transition-opacity group-hover/sidebar:pointer-events-auto group-hover/sidebar:opacity-100 group-data-[state=collapsed]/sidebar:hidden"
 						>
 							<UTooltip :text="t('space.new')">
 								<UButton
@@ -150,7 +150,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
 
 					<template v-for="space in spaces" :key="space.id" #[`space-${space.id}-trailing`]>
 						<div
-							class="-my-0.5 -mr-1.5 flex opacity-0 transition-opacity pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100 group-data-[state=collapsed]/sidebar:hidden has-data-[state=open]:opacity-100"
+							class="pointer-events-none -my-0.5 -mr-1.5 flex opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-data-[state=collapsed]/sidebar:hidden has-data-[state=open]:opacity-100"
 						>
 							<UDropdownMenu
 								:items="spaceActions(space)"
