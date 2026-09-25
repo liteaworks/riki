@@ -129,6 +129,10 @@ const absoluteHint = computed(() => {
 						<span>{{ relativeTime }}</span>
 					</UTooltip>
 				</div>
+				<div v-if="props.note.spaceName" class="flex shrink-0 items-center gap-1">
+					<UIcon :name="appConfig.ui.icons.folder" class="size-3.5" />
+					<span class="max-w-24 truncate">{{ props.note.spaceName }}</span>
+				</div>
 			</div>
 		</div>
 	</UContextMenu>

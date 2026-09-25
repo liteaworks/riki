@@ -113,7 +113,6 @@ const items = computed<NavigationMenuItem[][]>(() => [
 		...tags.value.map<NavigationMenuItem>((tag) => ({
 			label: tag.name,
 			icon: appConfig.ui.icons.hash,
-			badge: tag.usageCount || undefined,
 			active: scope.value === `tag:${tag.id}`,
 			onSelect: () => {
 				scope.value = `tag:${tag.id}`

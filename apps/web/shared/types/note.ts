@@ -45,12 +45,16 @@ export type CreateNoteBody = z.output<typeof createNoteBodySchema>
 export const updateNoteBodySchema = z
 	.object({
 		content: z.string().trim().min(1).optional(),
+		spaceId: z.union([z.string().trim().min(1), z.null()]).optional(),
 		tagNames: z.array(z.string().trim().min(1)).optional(),
 		status: z.enum(noteStatus).optional(),
 	})
 	.refine(
 		(body) =>
-			body.content !== undefined || body.tagNames !== undefined || body.status !== undefined,
+			body.content !== undefined ||
+			body.spaceId !== undefined ||
+			body.tagNames !== undefined ||
+			body.status !== undefined,
 		{
 			message: 'Empty update',
 		},
@@ -77,4 +81,6 @@ export const listNotesQuerySchema = z.object({
 
 export type ListNotesQuery = z.output<typeof listNotesQuerySchema>
 
-export type ListNotesResponse = { items: Note[]; nextCursor: string | null }
+export type NoteListItem = Note & { spaceName: string | null }
+
+export type ListNotesResponse = { items: NoteListItem[]; nextCursor: string | null }

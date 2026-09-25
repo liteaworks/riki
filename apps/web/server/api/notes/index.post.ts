@@ -5,15 +5,19 @@ import { resolveTagIdsForNames, tagLinkInserts } from '#server/utils/note-tags'
 import { requireUser } from '#server/utils/session'
 import { readBodyZod } from '#server/utils/validation'
 import { newId } from '#shared/utils/id'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
 	const user = await requireUser(event)
 	const body = await readBodyZod(event, createNoteBodySchema)
 
 	if (body.spaceId) {
-		const space = await db.select().from(spaces).where(eq(spaces.id, body.spaceId)).limit(1)
-		if (!space.length) throw createError({ statusCode: 404, statusMessage: 'Space not found' })
+		const [owned] = await db
+			.select({ id: spaces.id })
+			.from(spaces)
+			.where(and(eq(spaces.id, body.spaceId), eq(spaces.userId, user.id)))
+			.limit(1)
+		if (!owned) throw createError({ statusCode: 404, statusMessage: 'Space not found' })
 	}
 
 	const noteId = newId()
