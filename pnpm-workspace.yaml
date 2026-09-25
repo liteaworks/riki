@@ -1,3 +1,50 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+
+catalogs:
+  nuxt:
+    nuxt: ^4.5.2
+    '@nuxt/ui': ^4.11.2
+    '@nuxtjs/i18n': ^10.6.0
+    '@pinia/nuxt': ^1.0.1
+    '@iconify-json/ph': ^1.2.2
+
+  vue:
+    vue: ^3.5.43
+    'vue-router': ^5.2.0
+    pinia: ^4.0.3
+    pinia-plugin-persistedstate: ^4.7.1
+    '@vueuse/core': ^15.0.0
+    '@vueuse/nuxt': ^15.0.0
+
+  auth:
+    better-auth: ^1.7.5
+    '@better-auth/api-key': ^1.7.5
+    '@better-auth/drizzle-adapter': ^1.7.5
+
+  db:
+    drizzle-orm: 1.0.0-rc.4
+    drizzle-kit: 1.0.0-rc.4
+    '@libsql/client': ^0.18.0
+
+  tauri:
+    '@tauri-apps/api': ^2.11.1
+    '@tauri-apps/cli': ^2.11.4
+    '@tauri-apps/plugin-opener': ^2.5.4
+    '@tauri-store/pinia': ^5.0.2
+
+  editor:
+    '@tiptap/extension-mention': 3.31.3
+    '@comark/nuxt': 0.7.0
+
+  util:
+    nanoid: ^6.0.1
+    zod: ^4.6.5
+
+# Tiptap pins its peers to exact versions while its own deps use caret, so a
+# mixed resolution yields e.g. extension-list@3.31 against core@3.29 and the
+# editor fails to load. Overrides do not touch peer resolution, so this has to
+# match the version the peers land on (the highest matching Nuxt UI's ^3.27.3).
+overrides:
+  '@tiptap/*': 3.31.3
