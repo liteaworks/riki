@@ -4,6 +4,9 @@
 		"continue": "Continue",
 		"close": "Close",
 		"cancel": "Cancel",
+		"edit": "Edit",
+		"delete": "Delete",
+		"save": "Save",
 		"toggle": "Toggle",
 		"searchPlaceholder": "Search...",
 		"searchLabelPlaceholder": "Search {label}...",
@@ -18,6 +21,9 @@
 	"header": {
 		"backToApp": "Back to app",
 		"openAppMenu": "Open app menu"
+	},
+	"layout": {
+		"library": "Library"
 	},
 	"auth": {
 		"signIn": "Sign in",
@@ -46,13 +52,27 @@
 		"wordCount": "{count} characters",
 		"createdAt": "Created {time}",
 		"updatedAt": "Updated {time}",
-		"delete": "Delete",
 		"deleteTitle": "Delete note",
 		"deleteDescription": "Are you sure you want to delete this note? This action cannot be undone.",
 		"pin": "Pin",
 		"unpin": "Unpin",
 		"archive": "Archive",
 		"unarchive": "Unarchive"
+	},
+	"space": {
+		"label": "Spaces",
+		"new": "New space",
+		"create": "Create space",
+		"createTitle": "Create space",
+		"createDescription": "Spaces group your notes by where they belong.",
+		"editTitle": "Edit space",
+		"editDescription": "Rename this space.",
+		"name": "Name",
+		"deleteTitle": "Delete space",
+		"deleteDescription": "Are you sure you want to delete this space? Notes in it move to Inbox."
+	},
+	"tag": {
+		"label": "Tags"
 	},
 	"settings": {
 		"label": "Settings",

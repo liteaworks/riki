@@ -16,6 +16,7 @@ export const iconsTheme = {
 	copyCheck: 'ph:check-circle',
 	dark: 'ph:moon',
 	drag: 'ph:dots-six-vertical',
+	edit: 'ph:pencil-simple',
 	ellipsis: 'ph:dots-three',
 	error: 'ph:x-circle',
 	external: 'ph:arrow-up-right',

@@ -4,6 +4,9 @@
 		"continue": "繼續",
 		"close": "關閉",
 		"cancel": "取消",
+		"edit": "編輯",
+		"delete": "刪除",
+		"save": "儲存",
 		"toggle": "切換",
 		"searchPlaceholder": "搜尋…",
 		"searchLabelPlaceholder": "搜尋{label}…",
@@ -18,6 +21,9 @@
 	"header": {
 		"backToApp": "返回應用程式",
 		"openAppMenu": "開啟應用程式選單"
+	},
+	"layout": {
+		"library": "筆記庫"
 	},
 	"auth": {
 		"signIn": "登入",
@@ -46,13 +52,27 @@
 		"wordCount": "{count} 字",
 		"createdAt": "建立於 {time}",
 		"updatedAt": "更新於 {time}",
-		"delete": "刪除",
 		"deleteTitle": "刪除筆記",
 		"deleteDescription": "確定要刪除這條筆記嗎？此操作無法復原。",
 		"pin": "置頂",
 		"unpin": "取消置頂",
 		"archive": "封存",
 		"unarchive": "取消封存"
+	},
+	"space": {
+		"label": "空間",
+		"new": "新增空間",
+		"create": "建立空間",
+		"createTitle": "建立空間",
+		"createDescription": "空間用來歸納筆記的歸屬。",
+		"editTitle": "編輯空間",
+		"editDescription": "重新命名這個空間。",
+		"name": "名稱",
+		"deleteTitle": "刪除空間",
+		"deleteDescription": "確定要刪除這個空間嗎？裡面的筆記會移到未歸類。"
+	},
+	"tag": {
+		"label": "標籤"
 	},
 	"settings": {
 		"label": "設定",

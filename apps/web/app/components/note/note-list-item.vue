@@ -47,7 +47,7 @@ const menuItems = computed<ContextMenuItem[][]>(() => [
 	],
 	[
 		{
-			label: t('note.delete'),
+			label: t('common.delete'),
 			icon: appConfig.ui.icons.trash,
 			color: 'error',
 			onSelect: () => openDeleteDialog(),
@@ -89,7 +89,7 @@ async function handleDelete() {
 		emit('deleted', props.note.id)
 	} catch (error) {
 		toast.add({
-			title: t('common.actionFailed', { action: t('note.delete') }),
+			title: t('common.actionFailed', { action: t('common.delete') }),
 			description: error instanceof Error ? error.message : undefined,
 			color: 'error',
 		})

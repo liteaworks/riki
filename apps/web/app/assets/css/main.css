@@ -8,29 +8,13 @@
 @layer base {
 	* {
 		@apply border-default select-none selection:bg-primary/50;
-		scrollbar-width: thin;
-		scrollbar-color: var(--border-color-default) transparent;
+		@apply scrollbar-thin scrollbar-thumb-[var(--ui-border)];
 	}
 	html {
-		@apply no-scrollbar;
+		@apply scrollbar-none;
 	}
 	html,
 	body {
 		text-autospace: normal;
-	}
-	::-webkit-scrollbar-track {
-		background: transparent;
-	}
-	::-webkit-scrollbar-thumb {
-		background: var(--border-color-default);
-		border-radius: 5px;
-	}
-}
-
-@utility no-scrollbar {
-	-ms-overflow-style: none;
-	scrollbar-width: none;
-	&::-webkit-scrollbar {
-		display: none;
 	}
 }

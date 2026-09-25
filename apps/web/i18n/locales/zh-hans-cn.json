@@ -4,6 +4,9 @@
 		"continue": "继续",
 		"close": "关闭",
 		"cancel": "取消",
+		"edit": "编辑",
+		"delete": "删除",
+		"save": "保存",
 		"toggle": "切换",
 		"searchPlaceholder": "搜索…",
 		"searchLabelPlaceholder": "搜索{label}…",
@@ -18,6 +21,9 @@
 	"header": {
 		"backToApp": "返回应用",
 		"openAppMenu": "打开应用菜单"
+	},
+	"layout": {
+		"library": "笔记库"
 	},
 	"auth": {
 		"signIn": "登录",
@@ -46,13 +52,27 @@
 		"wordCount": "{count} 字",
 		"createdAt": "创建于 {time}",
 		"updatedAt": "更新于 {time}",
-		"delete": "删除",
 		"deleteTitle": "删除笔记",
 		"deleteDescription": "确定要删除这条笔记吗？此操作无法撤销。",
 		"pin": "置顶",
 		"unpin": "取消置顶",
 		"archive": "归档",
 		"unarchive": "取消归档"
+	},
+	"space": {
+		"label": "空间",
+		"new": "新增空间",
+		"create": "创建空间",
+		"createTitle": "创建空间",
+		"createDescription": "空间用来归类笔记的归属。",
+		"editTitle": "编辑空间",
+		"editDescription": "重命名这个空间。",
+		"name": "名称",
+		"deleteTitle": "删除空间",
+		"deleteDescription": "确定要删除这个空间吗？里面的笔记会移到未归类。"
+	},
+	"tag": {
+		"label": "标签"
 	},
 	"settings": {
 		"label": "设置",
