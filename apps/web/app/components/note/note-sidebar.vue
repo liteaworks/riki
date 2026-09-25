@@ -8,8 +8,15 @@ const { t } = useI18n()
 const appConfig = useAppConfig()
 const overlay = useOverlay()
 
-const { spaces, addSpace, renameSpace, deleteSpace, iconForSpace } = useSpaces()
-const { tags } = useTags()
+const spaceStore = useSpaceStore()
+const tagStore = useTagStore()
+const { spaces } = storeToRefs(spaceStore)
+const { tags } = storeToRefs(tagStore)
+
+onMounted(() => {
+	void spaceStore.load()
+	void tagStore.load()
+})
 
 const spaceFormModal = overlay.create(LazyNoteSpaceFormModal)
 const confirmDialog = overlay.create(LazyDialogModal)
@@ -28,8 +35,8 @@ function onSidebarContextMenu(event: MouseEvent) {
 }
 
 function onSpaceSaved(space: Space) {
-	if (spaces.value.some((item) => item.id === space.id)) renameSpace(space)
-	else addSpace(space)
+	if (spaces.value.some((item) => item.id === space.id)) spaceStore.renameSpace(space)
+	else spaceStore.addSpace(space)
 }
 
 function openCreateSpace() {
@@ -47,7 +54,7 @@ function openDeleteSpace(space: SpaceListItem) {
 		icon: appConfig.ui.icons.trash,
 		destructive: true,
 		onConfirm: () => {
-			void deleteSpace(space.id)
+			void spaceStore.deleteSpace(space.id)
 		},
 	})
 }
@@ -99,7 +106,7 @@ const items = computed<NavigationMenuItem[][]>(() => [
 		{ label: t('space.label'), type: 'label', slot: 'spaces' },
 		...spaces.value.map<NavigationMenuItem>((space) => ({
 			label: space.name,
-			icon: iconForSpace(space),
+			icon: spaceStore.iconForSpace(space),
 			active: scope.value === space.id,
 			slot: `space-${space.id}`,
 			'data-space-id': space.id,

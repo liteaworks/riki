@@ -121,9 +121,7 @@ const absoluteHint = computed(() => {
 			<article class="h-full rounded-xl bg-default p-2 py-1">
 				<Markdown :value="props.note.content" :components="markdownComponents" />
 			</article>
-			<div
-				class="flex items-center justify-between gap-2 pl-2 text-xs text-muted sm:py-1 sm:text-sm"
-			>
+			<div class="flex items-center gap-2 pl-2 text-xs text-muted sm:py-1 sm:text-sm">
 				<div class="flex gap-1 truncate">
 					<UTooltip :text="absoluteHint" :ui="{ content: 'whitespace-pre-line' }">
 						<span>{{ relativeTime }}</span>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { EditorMentionMenuItem } from '@nuxt/ui'
-import type { ListTagsResponse } from '#shared/types/tag'
+import type { TagListItem } from '#shared/types/tag'
 
 defineProps<{
 	editor: any
@@ -8,22 +8,33 @@ defineProps<{
 
 const appConfig = useAppConfig()
 
+const tagStore = useTagStore()
+
 const searchTerm = ref('')
 const debouncedSearchTerm = refDebounced(searchTerm, 200)
+const results = ref<TagListItem[]>([])
+let requestId = 0
 
-const { data } = useFetch<ListTagsResponse>('/api/tags', {
-	query: { q: debouncedSearchTerm, limit: 10 },
-	server: false,
-})
+watch(
+	debouncedSearchTerm,
+	async (term) => {
+		const id = ++requestId
+		const list = await tagStore.search(term.trim().replace(/\/+$/, ''))
+		if (id !== requestId) return
+		results.value = list
+	},
+	{ immediate: true },
+)
+
+const name = computed(() => searchTerm.value.trim().replace(/\/+$/, ''))
+const query = computed(() => name.value.toLowerCase())
 
 const items = computed<EditorMentionMenuItem[]>(() => {
-	const list = (data.value ?? []).map((tag) => ({ label: tag.name }))
-	let name = debouncedSearchTerm.value.trim()
-	while (name.endsWith('/')) name = name.slice(0, -1)
-	if (name && !list.some((item) => item.label.toLowerCase() === name.toLowerCase())) {
-		return [{ label: name, icon: appConfig.ui.icons.plus }, ...list]
+	const matches = results.value.map((tag) => ({ label: tag.name }))
+	if (name.value && !matches.some((item) => item.label.toLowerCase() === query.value)) {
+		return [{ label: name.value, icon: appConfig.ui.icons.plus }, ...matches]
 	}
-	return list
+	return matches
 })
 </script>
 

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { DropdownMenuItem, EditorToolbarItem } from '@nuxt/ui'
 import type { Note } from '#shared/types/note'
 import { tagMention } from '~/utils/tiptap-tag'
 
@@ -18,12 +17,15 @@ const toast = useToast()
 const appConfig = useAppConfig()
 
 const content = ref('')
+const spaceId = ref<string | null>(null)
 const sending = ref(false)
 
 watch(
 	() => open.value,
 	(isOpen) => {
-		if (isOpen) content.value = props.note?.content ?? ''
+		if (!isOpen) return
+		content.value = props.note?.content ?? ''
+		spaceId.value = props.note?.spaceId ?? null
 	},
 	{ immediate: true },
 )
@@ -34,15 +36,13 @@ const editor = computed(() => editorRef.value?.editor)
 const isEmpty = computed(() => !content.value.trim())
 const charCount = computed(() => content.value.trim().length)
 
-const toolbarItems: EditorToolbarItem[][] = [
-	[
-		{ kind: 'heading', level: 1, icon: appConfig.ui.icons.heading },
-		{ kind: 'mark', mark: 'bold', icon: appConfig.ui.icons.bold },
-		{ kind: 'mark', mark: 'italic', icon: appConfig.ui.icons.italic },
-		{ kind: 'bulletList', icon: appConfig.ui.icons.bulletList },
-		{ kind: 'orderedList', icon: appConfig.ui.icons.orderedList },
-		{ kind: 'codeBlock', icon: appConfig.ui.icons.code },
-	],
+const toolbarItems = [
+	{ kind: 'heading', level: 1, icon: appConfig.ui.icons.heading },
+	{ kind: 'mark', mark: 'bold', icon: appConfig.ui.icons.bold },
+	{ kind: 'mark', mark: 'italic', icon: appConfig.ui.icons.italic },
+	{ kind: 'bulletList', icon: appConfig.ui.icons.bulletList },
+	{ kind: 'orderedList', icon: appConfig.ui.icons.orderedList },
+	{ kind: 'codeBlock', icon: appConfig.ui.icons.code },
 ]
 
 const addItems = computed<DropdownMenuItem[][]>(() => [
@@ -62,7 +62,7 @@ const addItems = computed<DropdownMenuItem[][]>(() => [
 	],
 ])
 
-const actionItems = computed<DropdownMenuItem[][]>(() => [
+const actionItems = computed(() => [
 	[{ type: 'label', label: t('note.wordCount', { count: charCount.value }) }],
 ])
 
@@ -76,6 +76,7 @@ async function handleSend() {
 				method: 'PATCH',
 				body: {
 					content: trimmed,
+					spaceId: spaceId.value,
 					tagNames: extractTagNames(editor.value),
 				},
 			})
@@ -85,7 +86,7 @@ async function handleSend() {
 				method: 'POST',
 				body: {
 					content: trimmed,
-					spaceId: null,
+					spaceId: spaceId.value,
 					tagNames: extractTagNames(editor.value),
 				},
 			})
@@ -126,20 +127,10 @@ async function handleSend() {
 		<template #footer>
 			<div class="flex w-full items-center gap-1">
 				<UDropdownMenu :items="addItems" :content="{ align: 'start', side: 'top' }">
-					<UButton :icon="appConfig.ui.icons.plus" color="neutral" variant="ghost" size="sm" />
+					<UButton :icon="appConfig.ui.icons.plus" color="neutral" variant="ghost" />
 				</UDropdownMenu>
-				<UTooltip :text="t('note.inbox')">
-					<span class="inline-flex">
-						<UButton
-							:icon="appConfig.ui.icons.inbox"
-							color="neutral"
-							variant="ghost"
-							size="sm"
-							disabled
-						/>
-					</span>
-				</UTooltip>
-				<UFieldGroup size="sm" class="ml-auto">
+				<NoteSpaceMenu v-model="spaceId" />
+				<UFieldGroup class="ml-auto">
 					<UButton
 						:label="props.note?.id ? t('note.save') : t('note.send')"
 						variant="soft"
