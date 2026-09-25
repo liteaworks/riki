@@ -48,9 +48,13 @@ export const updateNoteBodySchema = z
 		tagNames: z.array(z.string().trim().min(1)).optional(),
 		status: z.enum(noteStatus).optional(),
 	})
-	.refine((body) => body.content !== undefined || body.tagNames !== undefined || body.status !== undefined, {
-		message: 'Empty update',
-	})
+	.refine(
+		(body) =>
+			body.content !== undefined || body.tagNames !== undefined || body.status !== undefined,
+		{
+			message: 'Empty update',
+		},
+	)
 
 export type UpdateNoteBody = z.output<typeof updateNoteBodySchema>
 

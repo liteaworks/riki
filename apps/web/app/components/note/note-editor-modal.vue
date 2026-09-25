@@ -140,7 +140,12 @@ async function handleSend() {
 					</span>
 				</UTooltip>
 				<UFieldGroup size="sm" class="ml-auto">
-					<UButton :label="props.note?.id ? t('note.save') : t('note.send')" variant="soft" :loading="sending" @click="handleSend" />
+					<UButton
+						:label="props.note?.id ? t('note.save') : t('note.send')"
+						variant="soft"
+						:loading="sending"
+						@click="handleSend"
+					/>
 					<UDropdownMenu :items="actionItems" :content="{ align: 'end', side: 'top' }">
 						<UButton :icon="appConfig.ui.icons.chevronDown" variant="soft" />
 					</UDropdownMenu>
