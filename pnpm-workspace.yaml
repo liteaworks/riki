@@ -8,6 +8,10 @@ catalogs:
     '@nuxt/ui': ^4.11.2
     '@nuxtjs/i18n': ^10.6.0
     '@pinia/nuxt': ^1.0.1
+
+  tooling:
+    typescript: ^6.0.0
+    vue-tsc: ^3.1.0
     '@iconify-json/ph': ^1.2.2
 
   vue:

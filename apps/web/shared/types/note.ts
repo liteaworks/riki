@@ -27,8 +27,7 @@ export const noteStatus = {
 export type NoteStatus = (typeof noteStatus)[keyof typeof noteStatus]
 export const noteStatusValues = Object.values(noteStatus) as [NoteStatus, ...NoteStatus[]]
 
-// `id` lets a client mint the note id, which is what makes a retried create the
-// same request instead of a duplicate. Omitted it behaves as a plain create.
+// A client-minted id makes a retried create the same request, not a duplicate.
 export const createNoteBodySchema = z.object({
 	id: z.string().trim().min(1).max(64).optional(),
 	content: z.string().trim().min(1),
@@ -52,8 +51,6 @@ export const updateNoteBodySchema = z
 		spaceId: z.union([z.string().trim().min(1), z.null()]).optional(),
 		tagNames: z.array(z.string().trim().min(1)).optional(),
 		status: z.enum(noteStatus).optional(),
-		// Last-write-wins guard for offline writers. The handler clamps it to server
-		// time and returns the stored row untouched when the client copy is older.
 		updatedAt: z.number().int().positive().optional(),
 	})
 	.refine(

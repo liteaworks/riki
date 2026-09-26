@@ -22,8 +22,7 @@ export const useSpaceStore = defineStore('space', () => {
 			spaces.value = [...byId.values()]
 			loaded.value = true
 		} catch {
-			// A preload must never break the page. `loaded` stays false so a later
-			// call retries, and the sidebar simply renders without spaces.
+			// A preload must not break the page; `loaded` stays false to retry.
 		} finally {
 			pending.value = false
 		}

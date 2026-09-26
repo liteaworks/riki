@@ -19,7 +19,6 @@ const content = ref('')
 const spaceId = ref<string | null>(null)
 const sending = ref(false)
 
-// New notes and edits share one draft slot, namespaced per user and per note.
 const draftScope = computed(() => draftStore.scopeFor(props.note?.id))
 const baseline = computed(() => props.note?.content ?? '')
 
@@ -35,8 +34,7 @@ watch(
 
 watch(content, (value) => {
 	if (!open.value) return
-	// Content identical to the saved note is not a pending change, so no draft is
-	// kept for it.
+	// Content equal to the saved note is not a pending change.
 	if (value === baseline.value) {
 		draftStore.discard(draftScope.value)
 		return

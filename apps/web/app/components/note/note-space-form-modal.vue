@@ -35,8 +35,8 @@ async function handleConfirm() {
 	if (!value || saving.value) return
 	saving.value = true
 	try {
-		// Written straight to the store: the sidebar and the composer's picker both
-		// read this array, so a callback prop would have to cross the overlay to reach them.
+		// Straight to the store: the sidebar and composer both read this array, so a
+		// callback prop would have to cross the overlay to reach them.
 		if (props.space) {
 			const space = await $fetch<Space>(`/api/spaces/${props.space.id}`, {
 				method: 'PATCH',

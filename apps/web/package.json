@@ -5,6 +5,7 @@
 		"dev": "nuxt dev",
 		"build": "nuxt build",
 		"preview": "nuxt preview",
+		"typecheck": "nuxt typecheck",
 		"tauri": "tauri",
 		"postinstall": "nuxt prepare",
 		"db:push": "drizzle-kit push",
@@ -33,12 +34,14 @@
 	},
 	"devDependencies": {
 		"@comark/nuxt": "catalog:editor",
-		"@iconify-json/ph": "catalog:nuxt",
+		"@iconify-json/ph": "catalog:tooling",
 		"@nuxtjs/i18n": "catalog:nuxt",
 		"@tauri-apps/cli": "catalog:tauri",
 		"@vueuse/core": "catalog:vue",
 		"@vueuse/nuxt": "catalog:vue",
 		"drizzle-kit": "catalog:db",
-		"nuxt": "catalog:nuxt"
+		"nuxt": "catalog:nuxt",
+		"typescript": "catalog:tooling",
+		"vue-tsc": "catalog:tooling"
 	}
 }

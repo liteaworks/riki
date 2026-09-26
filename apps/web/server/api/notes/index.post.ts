@@ -20,10 +20,8 @@ export default defineEventHandler(async (event) => {
 		if (!owned) throw createError({ statusCode: 404, statusMessage: 'Space not found' })
 	}
 
-	// A client-minted id makes this endpoint retryable: the same create replayed
-	// after a dropped response returns the row it already wrote. The ownership
-	// check comes first so an id belonging to someone else is indistinguishable
-	// from one that does not exist.
+	// A client-minted id makes this retryable. Ownership first, so an id belonging
+	// to someone else is indistinguishable from one that does not exist.
 	if (body.id) {
 		const [existing] = await db
 			.select()

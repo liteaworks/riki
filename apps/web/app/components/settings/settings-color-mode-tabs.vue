@@ -4,8 +4,8 @@ const model = defineModel<'light' | 'dark' | 'system'>()
 const appConfig = useAppConfig()
 const colorMode = useColorMode()
 
-function update(val: 'light' | 'dark' | 'system') {
-	colorMode.preference = val
+function update(val: string | number) {
+	if (val === 'light' || val === 'dark' || val === 'system') colorMode.preference = val
 }
 
 const items = computed(() => [

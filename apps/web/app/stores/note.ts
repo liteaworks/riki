@@ -27,8 +27,6 @@ type OutboxState = 'pending' | 'syncing' | 'failed'
 
 interface OutboxRow {
 	noteId: string
-	// A new note goes through POST (the client mints the id, so a retry is the
-	// same request); anything already on the server goes through PATCH.
 	kind: 'create' | 'update'
 	payload: OutboxPayload
 	updatedAt: number
@@ -62,10 +60,8 @@ export const useNoteStore = defineStore('note', () => {
 	const spaceStore = useSpaceStore()
 	const online = useOnline()
 
-	// The timeline renders from this cache, so it stays readable with no network.
-	// skipHydrate is required: without it Pinia hydrates these refs from the SSR
-	// payload (which holds the empty server-side default) and the localStorage
-	// copy is discarded on every page load.
+	// The timeline renders from this cache. skipHydrate, or Pinia hydrates the
+	// empty SSR default over it on every page load.
 	const notes = skipHydrate(useLocalStorage<NoteListItem[]>(localKeys.notes, []))
 	const outbox = skipHydrate(useLocalStorage<OutboxRow[]>(localKeys.outbox, []))
 	const nextCursor = skipHydrate(useLocalStorage<string | null>(localKeys.notesCursor, null))
@@ -74,8 +70,8 @@ export const useNoteStore = defineStore('note', () => {
 	const paginationDone = ref(false)
 	let started = false
 
-	// Shows only when the write has not landed: queued while offline, or failed.
-	// Keying on mere row presence made the badge flash on every online write.
+	// Only a write that has not landed is worth a badge; mere row presence flashed
+	// on every successful online write.
 	const unsyncedIds = computed(() => {
 		const rows = online.value ? outbox.value.filter((row) => row.state === 'failed') : outbox.value
 		return new Set(rows.map((row) => row.noteId))
@@ -90,7 +86,6 @@ export const useNoteStore = defineStore('note', () => {
 		return spaceStore.spaces.find((space) => space.id === spaceId)?.name ?? null
 	}
 
-	// Strictly-newer-wins, so replaying a pull can never undo a local edit.
 	function mergeIncoming(incoming: NoteListItem[]) {
 		if (!incoming.length) return
 		const byId = new Map(notes.value.map((note) => [note.id, note]))
@@ -106,9 +101,8 @@ export const useNoteStore = defineStore('note', () => {
 		notes.value = [...byId.values()].sort((a, b) => toEpoch(b.createdAt) - toEpoch(a.createdAt))
 	}
 
-	// A space rename never bumps the notes' `updatedAt`, so a cached `spaceName`
-	// would stay stale through every pull. Re-derive it when spaces are known;
-	// skipped while empty so offline use keeps the cached labels.
+	// A space rename never bumps the notes' updatedAt, so cached names would go
+	// stale. Skipped while spaces are empty so offline use keeps them.
 	watch(
 		() => spaceStore.spaces,
 		() => {
@@ -120,7 +114,7 @@ export const useNoteStore = defineStore('note', () => {
 		},
 	)
 
-	// One row per note: a newer local edit replaces whatever was still queued.
+	// One row per note: a newer local edit replaces the queued one.
 	function enqueue(row: OutboxRow) {
 		outbox.value = [...outbox.value.filter((item) => item.noteId !== row.noteId), row]
 	}
@@ -147,8 +141,7 @@ export const useNoteStore = defineStore('note', () => {
 		outbox.value = outbox.value.filter((row) => row.noteId !== noteId)
 	}
 
-	// Only the documented note endpoints are used: a client-minted id makes the
-	// POST retryable, and PATCH carries last-write-wins.
+	// A client-minted id makes POST retryable; PATCH carries last-write-wins.
 	async function push(row: OutboxRow) {
 		const body = {
 			content: row.payload.content,
@@ -162,8 +155,7 @@ export const useNoteStore = defineStore('note', () => {
 			await $fetch<Note>('/api/notes', { method: 'POST', body: { id: row.noteId, ...body } })
 			return
 		}
-		// PATCH answers with the winning row, so a write that lost last-write-wins
-		// still converges the local copy instead of silently diverging.
+		// PATCH returns the winning row, so a write that lost still converges.
 		const winner = await $fetch<Note>(`/api/notes/${row.noteId}`, { method: 'PATCH', body })
 		mergeIncoming([{ ...winner, spaceName: spaceNameOf(winner.spaceId) }])
 	}
@@ -180,9 +172,7 @@ export const useNoteStore = defineStore('note', () => {
 				await push(row)
 				settle(row.noteId)
 			} catch (error) {
-				// 4xx means the request itself is unacceptable, so retrying is
-				// pointless: drop the intent rather than loop. 5xx and network
-				// failures back off and try again.
+				// 4xx will never succeed, so drop the intent; 5xx and network back off.
 				const status = statusOf(error)
 				if (status >= 400 && status < 500) {
 					settle(row.noteId)
@@ -254,8 +244,8 @@ export const useNoteStore = defineStore('note', () => {
 	async function update(id: string, body: UpdateNoteBody) {
 		const index = indexOf(id)
 		const previous = notes.value[index]
-		// Returning quietly here would drop the user's edit on the floor: the cache
-		// can lose a note to a concurrent archive while the editor is still open.
+		// Returning quietly would drop the user's edit: the cache can lose a note
+		// to a concurrent archive while the editor is open.
 		if (!previous) throw new Error(`Cannot update unknown note ${id}`)
 		const next: NoteListItem = {
 			...previous,
@@ -275,7 +265,6 @@ export const useNoteStore = defineStore('note', () => {
 		return update(id, { status })
 	}
 
-	// Archive is the delete tombstone; mergeIncoming refuses to bring these back.
 	function remove(id: string) {
 		const index = indexOf(id)
 		const previous = notes.value[index]
@@ -289,14 +278,8 @@ export const useNoteStore = defineStore('note', () => {
 		return unsyncedIds.value.has(id)
 	}
 
-	// App-lifetime, not page-lifetime, so this deliberately outlives the calling
-	// component; the guard keeps a remount from stacking listeners.
-	//
-	// No polling. A retry only earns its keep once something has actually failed,
-	// so the queue is driven by user writes and by connectivity returning. A timer
-	// would spend D1 reads on every tick to discover there is nothing to do. A
-	// write that fails while online stays queued with its badge until the next
-	// write, the next reconnect, or a click on the badge.
+	// App-lifetime on purpose, so it outlives the calling component. No polling:
+	// a timer would spend D1 reads on every tick to find nothing to do.
 	function start() {
 		if (import.meta.server || started) return
 		started = true

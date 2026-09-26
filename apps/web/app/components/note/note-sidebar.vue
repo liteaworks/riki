@@ -12,9 +12,7 @@ const tagStore = useTagStore()
 const { spaces } = storeToRefs(spaceStore)
 const { tags } = storeToRefs(tagStore)
 
-// Client-only on purpose: these endpoints are auth-gated and `$fetch` does not
-// forward the browser's cookies during SSR, so `callOnce` here renders a 401 and
-// breaks the page. SSR them only behind `useRequestFetch`.
+// Client-only: `$fetch` forwards no cookies during SSR, so `callOnce` here 401s.
 onMounted(() => {
 	void spaceStore.load()
 	void tagStore.load()

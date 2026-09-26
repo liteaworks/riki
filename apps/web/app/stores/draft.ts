@@ -11,8 +11,8 @@ interface DraftEntry {
 	content: string
 }
 
-// Drafts were historically stored as raw markdown, and a future entry version
-// must not read as empty, so anything unrecognised is returned verbatim.
+// Unrecognised entries are returned verbatim: drafts were once raw markdown, and
+// a future version must not read as empty.
 function unwrap(stored: string): string {
 	try {
 		const parsed = JSON.parse(stored) as Partial<DraftEntry>
@@ -31,16 +31,14 @@ export const useDraftStore = defineStore('draft', () => {
 	const authClient = useAuth()
 	const session = authClient.useSession()
 
-	// scope -> serialised entry. skipHydrate is required or the SSR default
-	// clobbers the stored drafts on every page load.
+	// scope -> serialised entry. skipHydrate, or the SSR default clobbers it.
 	const drafts = skipHydrate(useLocalStorage<Record<string, string>>(localKeys.drafts, {}))
 
 	const timers = new Map<string, ReturnType<typeof setTimeout>>()
 
 	const userId = computed(() => session.value.data?.user?.id)
 
-	// A draft under a placeholder scope is unreadable once the real user id
-	// arrives, so nothing is persisted until the session resolves.
+	// A draft under a placeholder scope is unreadable once the real id arrives.
 	const isIdentified = computed(() => Boolean(userId.value))
 
 	function scopeFor(noteId?: string | null) {
@@ -75,7 +73,7 @@ export const useDraftStore = defineStore('draft', () => {
 	}
 
 	// Clearing the entry is not enough: a debounced write still in flight would
-	// resurrect the just-saved note as a stale draft when the editor unmounts.
+	// resurrect the saved note as a stale draft on unmount.
 	function discard(scope: string) {
 		const pending = timers.get(scope)
 		if (pending) {
@@ -88,7 +86,6 @@ export const useDraftStore = defineStore('draft', () => {
 		drafts.value = next
 	}
 
-	// "Modified but not saved": a stored draft that differs from the saved note.
 	function isDirty(scope: string, baseline: string) {
 		const stored = drafts.value[scope]
 		return stored !== undefined && unwrap(stored) !== baseline

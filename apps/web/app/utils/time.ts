@@ -1,5 +1,5 @@
-// API payloads and the localStorage cache both hand back ISO strings, while the
-// drizzle-derived row types claim `Date`. Normalise rather than trust either.
+// Note timestamps are typed `Date` by the drizzle rows but arrive as ISO strings
+// over JSON; normalise rather than trust either.
 export function toEpoch(value: string | number | Date): number {
 	return value instanceof Date ? value.getTime() : new Date(value).getTime()
 }
