@@ -15,6 +15,7 @@
 
 - Icons only via `appConfig.ui.icons` (`app/theme/icons.ts`). Never hardcode icon strings in components.
 - Modals only via `useOverlay` (`overlay.create(LazyXxxModal)` + `.open(props)`); dialog components expose a `close` emit. Never mount modal tags statically.
+- Should follow optimistic UI principles.
 
 ## i18n
 

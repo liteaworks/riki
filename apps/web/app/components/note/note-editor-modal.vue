@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Note } from '#shared/types/note'
+import type { DropdownMenuItem } from '@nuxt/ui'
 import { tagMention } from '~/utils/tiptap-tag'
 
 const props = defineProps<{
@@ -7,14 +8,11 @@ const props = defineProps<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
-const emit = defineEmits<{
-	created: [note: unknown]
-	updated: [note: Note]
-}>()
 
 const { t } = useI18n()
 const toast = useToast()
 const appConfig = useAppConfig()
+const noteStore = useNoteStore()
 
 const content = ref('')
 const spaceId = ref<string | null>(null)
@@ -62,7 +60,7 @@ const addItems = computed<DropdownMenuItem[][]>(() => [
 	],
 ])
 
-const actionItems = computed(() => [
+const actionItems = computed<DropdownMenuItem[][]>(() => [
 	[{ type: 'label', label: t('note.wordCount', { count: charCount.value }) }],
 ])
 
@@ -71,27 +69,13 @@ async function handleSend() {
 	sending.value = true
 	try {
 		const trimmed = content.value.trim()
-		if (props.note?.id) {
-			const updated = await $fetch<Note>(`/api/notes/${props.note.id}`, {
-				method: 'PATCH',
-				body: {
-					content: trimmed,
-					spaceId: spaceId.value,
-					tagNames: extractTagNames(editor.value),
-				},
-			})
-			emit('updated', updated)
-		} else {
-			const note = await $fetch('/api/notes', {
-				method: 'POST',
-				body: {
-					content: trimmed,
-					spaceId: spaceId.value,
-					tagNames: extractTagNames(editor.value),
-				},
-			})
-			emit('created', note)
+		const body = {
+			content: trimmed,
+			spaceId: spaceId.value,
+			tagNames: extractTagNames(editor.value),
 		}
+		if (props.note?.id) await noteStore.update(props.note.id, body)
+		else await noteStore.create(body)
 		content.value = ''
 		open.value = false
 	} catch (error) {

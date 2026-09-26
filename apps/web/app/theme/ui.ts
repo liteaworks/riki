@@ -63,7 +63,7 @@ export const uiTheme = {
 			body: [
 				'p-2 pr-0 gap-2',
 				'group-data-[state=collapsed]/sidebar:overflow-x-hidden',
-				'scrollbar-w-0.5 scrollbar-gutter-stable scrollbar-thumb-transparent hover:scrollbar-thumb-[var(--ui-border)]',
+				'scrollbar-gutter-stable scrollbar-thumb-transparent hover:scrollbar-thumb-[var(--ui-border)]',
 			],
 			header: 'px-2',
 			title: 'text-sm font-normal',

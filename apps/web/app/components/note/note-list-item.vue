@@ -10,14 +10,13 @@ const props = defineProps<{
 
 const emit = defineEmits<{
 	select: [note: Note]
-	updated: [note: Note]
-	deleted: [id: string]
 }>()
 
 const { t } = useI18n()
 const toast = useToast()
 const overlay = useOverlay()
 const appConfig = useAppConfig()
+const noteStore = useNoteStore()
 
 const confirmDialog = overlay.create(LazyDialogModal)
 
@@ -57,11 +56,7 @@ const menuItems = computed<ContextMenuItem[][]>(() => [
 
 async function toggleStatus(status: NoteStatus, action: string) {
 	try {
-		const updated = await $fetch<Note>(`/api/notes/${props.note.id}`, {
-			method: 'PATCH',
-			body: { status },
-		})
-		emit('updated', updated)
+		await noteStore.setStatus(props.note.id, status)
 	} catch (error) {
 		toast.add({
 			title: t('common.actionFailed', { action }),
@@ -85,8 +80,7 @@ function openDeleteDialog() {
 
 async function handleDelete() {
 	try {
-		await $fetch(`/api/notes/${props.note.id}`, { method: 'DELETE' })
-		emit('deleted', props.note.id)
+		await noteStore.remove(props.note.id)
 	} catch (error) {
 		toast.add({
 			title: t('common.actionFailed', { action: t('common.delete') }),

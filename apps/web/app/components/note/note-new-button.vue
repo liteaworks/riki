@@ -1,8 +1,6 @@
 <script setup lang="ts">
 const appConfig = useAppConfig()
 
-const { openComposer } = useNotes()
-
 withDefaults(
 	defineProps<{
 		variant?: 'full' | 'ghost'

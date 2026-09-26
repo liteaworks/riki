@@ -40,6 +40,7 @@ export const createNoteBodySchema = z.object({
 	status: z.enum(noteStatus).default(noteStatus.normal),
 })
 
+export type CreateNoteInput = z.input<typeof createNoteBodySchema>
 export type CreateNoteBody = z.output<typeof createNoteBodySchema>
 
 export const updateNoteBodySchema = z

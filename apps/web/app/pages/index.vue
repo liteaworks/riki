@@ -1,5 +1,26 @@
 <script setup lang="ts">
-const { notes, openComposer, removeNote, updateNote } = useNotes()
+const noteStore = useNoteStore()
+const { notes } = storeToRefs(noteStore)
+
+const scrollArea = useTemplateRef<{
+	$el: HTMLElement
+	virtualizer?: { scrollToIndex: (index: number, options?: Record<string, unknown>) => void }
+}>('scrollArea')
+
+function scrollToTop() {
+	scrollArea.value?.virtualizer?.scrollToIndex(0, { align: 'start' })
+}
+
+onMounted(() => {
+	void noteStore.loadMore()
+	useInfiniteScroll(
+		() => scrollArea.value?.$el,
+		() => void noteStore.loadMore(),
+		{ distance: 200 },
+	)
+})
+
+watch(() => notes.value[0]?.id, scrollToTop)
 </script>
 
 <template>
@@ -13,12 +34,7 @@ const { notes, openComposer, removeNote, updateNote } = useNotes()
 			:virtualize="{ gap: 8, lanes: 3, estimateSize: 200 }"
 			class="size-full p-2"
 		>
-			<NoteListItem
-				:note="item"
-				@select="openComposer"
-				@updated="updateNote"
-				@deleted="removeNote"
-			/>
+			<NoteListItem :note="item" @select="openComposer" />
 		</UScrollArea>
 		<div class="absolute bottom-4 left-1/2 z-50 -translate-x-1/2 sm:hidden">
 			<NoteNewButton />
