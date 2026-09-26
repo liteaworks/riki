@@ -5,6 +5,7 @@ export const iconsTheme = {
 	arrowUp: 'ph:arrow-up',
 	caution: 'ph:warning-circle',
 	check: 'ph:check',
+	cloudUpload: 'ph:cloud-arrow-up',
 	chevronDoubleLeft: 'ph:caret-double-left',
 	chevronDoubleRight: 'ph:caret-double-right',
 	chevronDown: 'ph:caret-down',
@@ -46,6 +47,7 @@ export const iconsTheme = {
 
 	// editor
 	heading: 'ph:text-h',
+	draft: 'ph:note-pencil',
 	bold: 'ph:text-b',
 	italic: 'ph:text-italic',
 	bulletList: 'ph:list-bullets',

@@ -35,6 +35,7 @@ export const notes = sqliteTable(
 	(table) => [
 		index('notes_userId_idx').on(table.userId),
 		index('notes_spaceId_idx').on(table.spaceId),
+		index('notes_updatedAt_idx').on(table.updatedAt),
 	],
 )
 

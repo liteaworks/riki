@@ -2,21 +2,22 @@
 import type { ContextMenuItem } from '@nuxt/ui'
 import { LazyDialogModal, NoteLink, NoteTag } from '#components'
 import { noteStatus } from '#shared/types/note'
-import type { Note, NoteStatus } from '#shared/types/note'
+import type { NoteListItem, NoteStatus } from '#shared/types/note'
 
 const props = defineProps<{
-	note: Note
+	note: NoteListItem
 }>()
 
 const emit = defineEmits<{
-	select: [note: Note]
+	select: [note: NoteListItem]
 }>()
 
 const { t } = useI18n()
-const toast = useToast()
 const overlay = useOverlay()
 const appConfig = useAppConfig()
 const noteStore = useNoteStore()
+const draftStore = useDraftStore()
+const notifyFailure = useFailureToast()
 
 const confirmDialog = overlay.create(LazyDialogModal)
 
@@ -58,11 +59,7 @@ async function toggleStatus(status: NoteStatus, action: string) {
 	try {
 		await noteStore.setStatus(props.note.id, status)
 	} catch (error) {
-		toast.add({
-			title: t('common.actionFailed', { action }),
-			description: error instanceof Error ? error.message : undefined,
-			color: 'error',
-		})
+		notifyFailure(action, error)
 	}
 }
 
@@ -81,16 +78,22 @@ function openDeleteDialog() {
 async function handleDelete() {
 	try {
 		await noteStore.remove(props.note.id)
+		// The note is gone for good, so its draft would be unreachable anyway.
+		draftStore.discard(draftStore.scopeFor(props.note.id))
 	} catch (error) {
-		toast.add({
-			title: t('common.actionFailed', { action: t('common.delete') }),
-			description: error instanceof Error ? error.message : undefined,
-			color: 'error',
-		})
+		notifyFailure(t('common.delete'), error)
 	}
 }
 
 const markdownComponents = { a: NoteLink, tag: NoteTag }
+
+const isUnsynced = computed(() => noteStore.isPending(props.note.id))
+const draftScope = computed(() => draftStore.scopeFor(props.note.id))
+const hasDraft = computed(() => draftStore.isDirty(draftScope.value, props.note.content))
+
+function onRetry() {
+	void noteStore.retryNote(props.note.id)
+}
 
 const { locale } = useI18n()
 
@@ -116,7 +119,20 @@ const absoluteHint = computed(() => {
 				<Markdown :value="props.note.content" :components="markdownComponents" />
 			</article>
 			<div class="flex items-center gap-2 pl-2 text-xs text-muted sm:py-1 sm:text-sm">
-				<div class="flex gap-1 truncate">
+				<div class="flex items-center gap-1 truncate">
+					<UTooltip v-if="hasDraft" :text="$t('note.draft')">
+						<UIcon :name="appConfig.ui.icons.draft" class="size-3.5 shrink-0 text-warning" />
+					</UTooltip>
+					<UTooltip v-if="isUnsynced" :text="$t('note.unsynced')">
+						<UButton
+							color="warning"
+							variant="link"
+							size="xs"
+							class="-my-1 px-1"
+							:icon="appConfig.ui.icons.cloudUpload"
+							@click.stop="onRetry"
+						/>
+					</UTooltip>
 					<UTooltip :text="absoluteHint" :ui="{ content: 'whitespace-pre-line' }">
 						<span>{{ relativeTime }}</span>
 					</UTooltip>

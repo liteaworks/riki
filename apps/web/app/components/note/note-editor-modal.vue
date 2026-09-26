@@ -10,23 +10,38 @@ const props = defineProps<{
 const open = defineModel<boolean>('open', { default: false })
 
 const { t } = useI18n()
-const toast = useToast()
 const appConfig = useAppConfig()
 const noteStore = useNoteStore()
+const draftStore = useDraftStore()
 
 const content = ref('')
 const spaceId = ref<string | null>(null)
 const sending = ref(false)
 
+// New notes and edits share one draft slot, namespaced per user and per note.
+const draftScope = computed(() => draftStore.scopeFor(props.note?.id))
+const baseline = computed(() => props.note?.content ?? '')
+
 watch(
 	() => open.value,
 	(isOpen) => {
 		if (!isOpen) return
-		content.value = props.note?.content ?? ''
+		content.value = draftStore.load(draftScope.value) || baseline.value
 		spaceId.value = props.note?.spaceId ?? null
 	},
 	{ immediate: true },
 )
+
+watch(content, (value) => {
+	if (!open.value) return
+	// Content identical to the saved note is not a pending change, so no draft is
+	// kept for it.
+	if (value === baseline.value) {
+		draftStore.discard(draftScope.value)
+		return
+	}
+	draftStore.save(draftScope.value, value)
+})
 
 const editorRef = useTemplateRef<any>('editorRef')
 const editor = computed(() => editorRef.value?.editor)
@@ -77,13 +92,10 @@ async function handleSend() {
 		if (props.note?.id) await noteStore.update(props.note.id, body)
 		else await noteStore.create(body)
 		content.value = ''
+		draftStore.discard(draftScope.value)
 		open.value = false
 	} catch (error) {
-		toast.add({
-			title: t('common.actionFailed', { action: t('note.send') }),
-			description: error instanceof Error ? error.message : undefined,
-			color: 'error',
-		})
+		notifyFailure(t('note.send'), error)
 	} finally {
 		sending.value = false
 	}

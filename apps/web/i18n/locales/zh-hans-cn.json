@@ -57,7 +57,9 @@
 		"pin": "置顶",
 		"unpin": "取消置顶",
 		"archive": "归档",
-		"unarchive": "取消归档"
+		"unarchive": "取消归档",
+		"unsynced": "未同步",
+		"draft": "有未保存的修改"
 	},
 	"space": {
 		"label": "空间",

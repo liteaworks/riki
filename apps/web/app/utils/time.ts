@@ -1,3 +1,9 @@
+// API payloads and the localStorage cache both hand back ISO strings, while the
+// drizzle-derived row types claim `Date`. Normalise rather than trust either.
+export function toEpoch(value: string | number | Date): number {
+	return value instanceof Date ? value.getTime() : new Date(value).getTime()
+}
+
 const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
 	['second', 60],
 	['minute', 60],
@@ -8,7 +14,7 @@ const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
 ]
 
 export function formatRelativeTime(value: string | number | Date, locale: string): string {
-	const time = new Date(value).getTime()
+	const time = toEpoch(value)
 	if (Number.isNaN(time)) return ''
 	const formatter = new Intl.RelativeTimeFormat(resolveLocale(locale), { numeric: 'auto' })
 	let delta = Math.round((time - Date.now()) / 1000)
