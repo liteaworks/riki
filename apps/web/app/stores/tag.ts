@@ -12,6 +12,9 @@ export const useTagStore = defineStore('tag', () => {
 		try {
 			tags.value = await $fetch<TagListItem[]>('/api/tags', { query: { limit: 50 } })
 			loaded.value = true
+		} catch {
+			// A preload must never break the page. `loaded` stays false so a later
+			// call retries, and the sidebar simply renders without tags.
 		} finally {
 			pending.value = false
 		}

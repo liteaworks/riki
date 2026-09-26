@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { ContextMenuItem, DropdownMenuItem, NavigationMenuItem } from '@nuxt/ui'
 import { LazyDialogModal, LazyNoteSpaceFormModal } from '#components'
-import type { Space } from '#shared/types/note'
 import type { SpaceListItem } from '#shared/types/space'
 
 const { t } = useI18n()
@@ -13,6 +12,9 @@ const tagStore = useTagStore()
 const { spaces } = storeToRefs(spaceStore)
 const { tags } = storeToRefs(tagStore)
 
+// Client-only on purpose: these endpoints are auth-gated and `$fetch` does not
+// forward the browser's cookies during SSR, so `callOnce` here renders a 401 and
+// breaks the page. SSR them only behind `useRequestFetch`.
 onMounted(() => {
 	void spaceStore.load()
 	void tagStore.load()
@@ -34,17 +36,12 @@ function onSidebarContextMenu(event: MouseEvent) {
 	contextSpaceId.value = target.closest<HTMLElement>('[data-space-id]')?.dataset.spaceId ?? null
 }
 
-function onSpaceSaved(space: Space) {
-	if (spaces.value.some((item) => item.id === space.id)) spaceStore.renameSpace(space)
-	else spaceStore.addSpace(space)
-}
-
 function openCreateSpace() {
-	spaceFormModal.open({ space: null, onSaved: onSpaceSaved })
+	spaceFormModal.open({ space: null })
 }
 
 function openEditSpace(space: SpaceListItem) {
-	spaceFormModal.open({ space, onSaved: onSpaceSaved })
+	spaceFormModal.open({ space })
 }
 
 function openDeleteSpace(space: SpaceListItem) {

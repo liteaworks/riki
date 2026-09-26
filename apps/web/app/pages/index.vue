@@ -11,8 +11,9 @@ function scrollToTop() {
 	scrollArea.value?.virtualizer?.scrollToIndex(0, { align: 'start' })
 }
 
+noteStore.start()
+
 onMounted(() => {
-	void noteStore.loadMore()
 	useInfiniteScroll(
 		() => scrollArea.value?.$el,
 		() => void noteStore.loadMore(),

@@ -6,13 +6,11 @@ const props = defineProps<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
-const emit = defineEmits<{
-	saved: [space: Space]
-}>()
 
 const { t } = useI18n()
 const toast = useToast()
 const appConfig = useAppConfig()
+const spaceStore = useSpaceStore()
 
 const name = ref('')
 const saving = ref(false)
@@ -37,13 +35,18 @@ async function handleConfirm() {
 	if (!value || saving.value) return
 	saving.value = true
 	try {
-		const space = props.space
-			? await $fetch<Space>(`/api/spaces/${props.space.id}`, {
-					method: 'PATCH',
-					body: { name: value },
-				})
-			: await $fetch<Space>('/api/spaces', { method: 'POST', body: { name: value } })
-		emit('saved', space)
+		// Written straight to the store: the sidebar and the composer's picker both
+		// read this array, so a callback prop would have to cross the overlay to reach them.
+		if (props.space) {
+			const space = await $fetch<Space>(`/api/spaces/${props.space.id}`, {
+				method: 'PATCH',
+				body: { name: value },
+			})
+			spaceStore.renameSpace(space)
+		} else {
+			const space = await $fetch<Space>('/api/spaces', { method: 'POST', body: { name: value } })
+			spaceStore.addSpace(space)
+		}
 		open.value = false
 	} catch (error) {
 		toast.add({

@@ -1,7 +1,6 @@
 import { db } from '#server/utils/db'
 import { noteTags, tags } from '#server/db/schemas'
 import { and, eq, inArray, sql } from 'drizzle-orm'
-import { chunk } from '#shared/utils/chunk'
 
 function dedupeTagNames(tagNames: string[]): string[] {
 	const deduped = new Map<string, string>()
@@ -21,47 +20,32 @@ async function ensureTags(userId: string, tagNames: string[]): Promise<void> {
 	])
 }
 
-// D1 allows 100 bound parameters per query, so the `IN (...)` list and the insert
-// batch are both chunked. Callers touching many notes must use this rather than
-// looping `resolveTagIdsForNames`, which costs a batch + select per note.
-const D1_CHUNK = 50
-
-export async function resolveTagIdMap(
-	userId: string,
-	tagNames: string[],
-): Promise<Map<string, string>> {
-	const deduped = dedupeTagNames(tagNames)
-	if (!deduped.length) return new Map()
-	const groups = chunk(deduped, D1_CHUNK)
-	for (const group of groups) await ensureTags(userId, group)
-
-	const byName = new Map<string, string>()
-	for (const group of groups) {
-		const rows = await db
-			.select({ id: tags.id, name: tags.name })
-			.from(tags)
-			.where(
-				and(
-					eq(tags.userId, userId),
-					inArray(
-						sql`lower(${tags.name})`,
-						group.map((name) => name.toLowerCase()),
-					),
+async function resolveTagIds(userId: string, tagNames: string[]): Promise<string[]> {
+	if (!tagNames.length) return []
+	const rows = await db
+		.select({ id: tags.id, name: tags.name })
+		.from(tags)
+		.where(
+			and(
+				eq(tags.userId, userId),
+				inArray(
+					sql`lower(${tags.name})`,
+					tagNames.map((name) => name.toLowerCase()),
 				),
-			)
-		for (const row of rows) byName.set(row.name.toLowerCase(), row.id)
-	}
-	return byName
+			),
+		)
+	const byKey = new Map(rows.map((tag) => [tag.name.toLowerCase(), tag.id]))
+	return tagNames.map((name) => {
+		const id = byKey.get(name.toLowerCase())
+		if (!id) throw createError({ statusCode: 500, statusMessage: 'Failed to resolve tag' })
+		return id
+	})
 }
 
 export async function resolveTagIdsForNames(userId: string, tagNames: string[]): Promise<string[]> {
 	const deduped = dedupeTagNames(tagNames)
-	const byName = await resolveTagIdMap(userId, deduped)
-	return deduped.map((name) => {
-		const id = byName.get(name.toLowerCase())
-		if (!id) throw createError({ statusCode: 500, statusMessage: 'Failed to resolve tag' })
-		return id
-	})
+	await ensureTags(userId, deduped)
+	return resolveTagIds(userId, deduped)
 }
 
 export function tagLinkInserts(noteId: string, tagIds: string[]) {

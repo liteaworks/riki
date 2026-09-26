@@ -14,8 +14,16 @@ export const useSpaceStore = defineStore('space', () => {
 		if (loaded.value && !options?.force) return
 		pending.value = true
 		try {
-			spaces.value = await $fetch<SpaceListItem[]>('/api/spaces')
+			const rows = await $fetch<SpaceListItem[]>('/api/spaces')
+			// Merged, not replaced: a space created while this was in flight is absent
+			// from the response and would vanish from the sidebar until reload.
+			const byId = new Map(spaces.value.map((space) => [space.id, space]))
+			for (const row of rows) byId.set(row.id, row)
+			spaces.value = [...byId.values()]
 			loaded.value = true
+		} catch {
+			// A preload must never break the page. `loaded` stays false so a later
+			// call retries, and the sidebar simply renders without spaces.
 		} finally {
 			pending.value = false
 		}

@@ -14,7 +14,7 @@ async function handleSignOut() {
 	if (error) {
 		toast.add({
 			title: t('common.actionFailed', { action: t('auth.signOut') }),
-			description: error.message,
+			description: error instanceof Error ? error.message : undefined,
 			color: 'error',
 		})
 		return

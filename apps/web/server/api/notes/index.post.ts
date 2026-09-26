@@ -20,7 +20,26 @@ export default defineEventHandler(async (event) => {
 		if (!owned) throw createError({ statusCode: 404, statusMessage: 'Space not found' })
 	}
 
-	const noteId = newId()
+	// A client-minted id makes this endpoint retryable: the same create replayed
+	// after a dropped response returns the row it already wrote. The ownership
+	// check comes first so an id belonging to someone else is indistinguishable
+	// from one that does not exist.
+	if (body.id) {
+		const [existing] = await db
+			.select()
+			.from(notes)
+			.where(and(eq(notes.id, body.id), eq(notes.userId, user.id)))
+			.limit(1)
+		if (existing) return existing
+		const [foreign] = await db
+			.select({ id: notes.id })
+			.from(notes)
+			.where(eq(notes.id, body.id))
+			.limit(1)
+		if (foreign) throw createError({ statusCode: 404, statusMessage: 'Note not found' })
+	}
+
+	const noteId = body.id ?? newId()
 	const tagIds = await resolveTagIdsForNames(user.id, body.tagNames ?? [])
 
 	const [noteRows] = await db.batch([

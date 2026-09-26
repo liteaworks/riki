@@ -1,12 +1,11 @@
 import { skipHydrate } from 'pinia'
-import { chunk } from '#shared/utils/chunk'
-import { noteStatus, noteVisibility, syncNotesBodySchema } from '#shared/types/note'
-import { messageOf } from '../utils/failure-toast'
+import { noteStatus, noteVisibility } from '#shared/types/note'
 import { localKeys } from '../utils/local-cache'
 import { toEpoch } from '../utils/time'
 import type {
 	CreateNoteInput,
 	ListNotesResponse,
+	Note,
 	NoteListItem,
 	NoteStatus,
 	UpdateNoteBody,
@@ -28,6 +27,9 @@ type OutboxState = 'pending' | 'syncing' | 'failed'
 
 interface OutboxRow {
 	noteId: string
+	// A new note goes through POST (the client mints the id, so a retry is the
+	// same request); anything already on the server goes through PATCH.
+	kind: 'create' | 'update'
 	payload: OutboxPayload
 	updatedAt: number
 	state: OutboxState
@@ -39,11 +41,7 @@ interface OutboxRow {
 const MAX_ATTEMPTS = 8
 const RETRY_BASE_MS = 2000
 const RETRY_MAX_MS = 60_000
-const SYNC_INTERVAL_MS = 15_000
 const PAGE_SIZE = 20
-const PULL_LIMIT = 50
-// Must not exceed the server's `syncNotesBodySchema` cap.
-const SYNC_BATCH = 50
 
 function statusOf(error: unknown) {
 	if (error && typeof error === 'object' && 'statusCode' in error) {
@@ -56,20 +54,6 @@ function statusOf(error: unknown) {
 function backoffDelay(attempts: number) {
 	const exponential = Math.min(RETRY_BASE_MS * 2 ** attempts, RETRY_MAX_MS)
 	return Math.round(exponential * (0.5 + Math.random() * 0.5))
-}
-
-function toSyncBody(rows: OutboxRow[]) {
-	return syncNotesBodySchema.parse({
-		notes: rows.map((row) => ({
-			id: row.noteId,
-			content: row.payload.content,
-			spaceId: row.payload.spaceId,
-			...(row.payload.tagNames ? { tagNames: row.payload.tagNames } : {}),
-			visibility: row.payload.visibility,
-			status: row.payload.status,
-			updatedAt: row.updatedAt,
-		})),
-	})
 }
 
 export const useNoteStore = defineStore('note', () => {
@@ -89,10 +73,6 @@ export const useNoteStore = defineStore('note', () => {
 	const syncing = ref(false)
 	const paginationDone = ref(false)
 	let started = false
-
-	// Highest `updatedAt` the client has already reconciled; lets the periodic pull
-	// ask for a delta instead of re-reading the newest page every time.
-	let syncPoint = 0
 
 	// Shows only when the write has not landed: queued while offline, or failed.
 	// Keying on mere row presence made the badge flash on every online write.
@@ -145,9 +125,10 @@ export const useNoteStore = defineStore('note', () => {
 		outbox.value = [...outbox.value.filter((item) => item.noteId !== row.noteId), row]
 	}
 
-	function enqueueFor(note: NoteListItem, tagNames?: string[]) {
+	function enqueueFor(note: NoteListItem, kind: OutboxRow['kind'], tagNames?: string[]) {
 		enqueue({
 			noteId: note.id,
+			kind,
 			payload: {
 				content: note.content,
 				spaceId: note.spaceId,
@@ -162,6 +143,31 @@ export const useNoteStore = defineStore('note', () => {
 		})
 	}
 
+	function settle(noteId: string) {
+		outbox.value = outbox.value.filter((row) => row.noteId !== noteId)
+	}
+
+	// Only the documented note endpoints are used: a client-minted id makes the
+	// POST retryable, and PATCH carries last-write-wins.
+	async function push(row: OutboxRow) {
+		const body = {
+			content: row.payload.content,
+			spaceId: row.payload.spaceId,
+			...(row.payload.tagNames ? { tagNames: row.payload.tagNames } : {}),
+			visibility: row.payload.visibility,
+			status: row.payload.status,
+			updatedAt: row.updatedAt,
+		}
+		if (row.kind === 'create') {
+			await $fetch<Note>('/api/notes', { method: 'POST', body: { id: row.noteId, ...body } })
+			return
+		}
+		// PATCH answers with the winning row, so a write that lost last-write-wins
+		// still converges the local copy instead of silently diverging.
+		const winner = await $fetch<Note>(`/api/notes/${row.noteId}`, { method: 'PATCH', body })
+		mergeIncoming([{ ...winner, spaceName: spaceNameOf(winner.spaceId) }])
+	}
+
 	async function flush() {
 		if (syncing.value || !online.value) return
 		const now = Date.now()
@@ -169,64 +175,38 @@ export const useNoteStore = defineStore('note', () => {
 		if (!due.length) return
 
 		syncing.value = true
-		const claimed = new Set(due.map((row) => row.noteId))
-		outbox.value = outbox.value.map((row) =>
-			claimed.has(row.noteId) ? { ...row, state: 'syncing' } : row,
-		)
-		try {
-			for (const group of chunk(due, SYNC_BATCH)) {
-				const response = await $fetch<{ applied: string[]; rejected: string[] }>('/api/sync', {
-					method: 'POST',
-					body: toSyncBody(group),
-				})
-				// Rejected ids belong to another user: drop them instead of retrying forever.
-				const settled = new Set([...response.applied, ...response.rejected])
-				outbox.value = outbox.value.filter((row) => !settled.has(row.noteId))
-			}
-		} catch (error) {
-			// A 4xx will never succeed on retry, so it fails permanently instead of
-			// burning eight attempts and a batch of backoff.
-			const permanent = statusOf(error) >= 400 && statusOf(error) < 500
-			outbox.value = outbox.value.map((row) => {
-				if (row.state !== 'syncing') return row
-				const attempts = row.attempts + 1
-				return {
-					...row,
-					state: permanent || attempts >= MAX_ATTEMPTS ? ('failed' as const) : ('pending' as const),
-					attempts,
-					nextRetryAt: Date.now() + backoffDelay(attempts),
-					lastError: messageOf(error),
+		for (const row of due) {
+			try {
+				await push(row)
+				settle(row.noteId)
+			} catch (error) {
+				// 4xx means the request itself is unacceptable, so retrying is
+				// pointless: drop the intent rather than loop. 5xx and network
+				// failures back off and try again.
+				const status = statusOf(error)
+				if (status >= 400 && status < 500) {
+					settle(row.noteId)
+					continue
 				}
-			})
-		} finally {
-			syncing.value = false
-		}
-	}
-
-	async function pull() {
-		if (!online.value) return
-		try {
-			const data = await $fetch<{ items: NoteListItem[] }>('/api/notes', {
-				query: { limit: PULL_LIMIT, ...(syncPoint ? { since: syncPoint } : {}) },
-			})
-			mergeIncoming(data.items)
-			// Only advance past a delta we know is complete, otherwise a truncated
-			// page would silently skip the rows that did not fit.
-			if (data.items.length < PULL_LIMIT) {
-				syncPoint = data.items.reduce(
-					(max, note) => Math.max(max, toEpoch(note.updatedAt)),
-					syncPoint,
+				const attempts = row.attempts + 1
+				outbox.value = outbox.value.map((item) =>
+					item.noteId === row.noteId
+						? {
+								...item,
+								state: attempts >= MAX_ATTEMPTS ? ('failed' as const) : ('pending' as const),
+								attempts,
+								nextRetryAt: Date.now() + backoffDelay(attempts),
+								lastError: error instanceof Error ? error.message : String(error),
+							}
+						: item,
 				)
 			}
-		} catch {
-			// keep the cache
 		}
+		syncing.value = false
 	}
 
 	async function loadMore() {
 		if (pending.value || !online.value) return
-		// `pull` fills the cache without touching the cursor, so "no cursor" alone
-		// cannot mean "exhausted" or paging would stop at the first page.
 		if (paginationDone.value) return
 		pending.value = true
 		try {
@@ -241,11 +221,6 @@ export const useNoteStore = defineStore('note', () => {
 		} finally {
 			pending.value = false
 		}
-	}
-
-	async function sync() {
-		await flush()
-		await pull()
 	}
 
 	async function retryNote(id: string) {
@@ -271,7 +246,7 @@ export const useNoteStore = defineStore('note', () => {
 			updatedAt: now,
 		}
 		notes.value = [note, ...notes.value]
-		enqueueFor(note, input.tagNames)
+		enqueueFor(note, 'create', input.tagNames)
 		await flush()
 		return note
 	}
@@ -291,7 +266,7 @@ export const useNoteStore = defineStore('note', () => {
 			updatedAt: new Date(),
 		}
 		notes.value[index] = next
-		enqueueFor(next, body.tagNames)
+		enqueueFor(next, 'update', body.tagNames)
 		await flush()
 		return next
 	}
@@ -306,7 +281,7 @@ export const useNoteStore = defineStore('note', () => {
 		const previous = notes.value[index]
 		if (!previous) return
 		notes.value.splice(index, 1)
-		enqueueFor({ ...previous, status: noteStatus.archived, updatedAt: new Date() })
+		enqueueFor({ ...previous, status: noteStatus.archived, updatedAt: new Date() }, 'update')
 		void flush()
 	}
 
@@ -314,14 +289,19 @@ export const useNoteStore = defineStore('note', () => {
 		return unsyncedIds.value.has(id)
 	}
 
-	// Sync is app-lifetime, not page-lifetime, so this deliberately outlives the
-	// calling component. The guard keeps a remount from stacking intervals.
+	// App-lifetime, not page-lifetime, so this deliberately outlives the calling
+	// component; the guard keeps a remount from stacking listeners.
+	//
+	// No polling. A retry only earns its keep once something has actually failed,
+	// so the queue is driven by user writes and by connectivity returning. A timer
+	// would spend D1 reads on every tick to discover there is nothing to do. A
+	// write that fails while online stays queued with its badge until the next
+	// write, the next reconnect, or a click on the badge.
 	function start() {
 		if (import.meta.server || started) return
 		started = true
-		void sync()
-		useIntervalFn(() => void sync(), SYNC_INTERVAL_MS)
-		useEventListener(window, 'online', () => void sync())
+		void loadMore()
+		useEventListener(window, 'online', () => void flush())
 	}
 
 	return {
@@ -330,7 +310,6 @@ export const useNoteStore = defineStore('note', () => {
 		syncing,
 		loadMore,
 		start,
-		sync,
 		flush,
 		retryNote,
 		isPending,

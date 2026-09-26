@@ -13,11 +13,11 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const toast = useToast()
 const overlay = useOverlay()
 const appConfig = useAppConfig()
 const noteStore = useNoteStore()
 const draftStore = useDraftStore()
-const notifyFailure = useFailureToast()
 
 const confirmDialog = overlay.create(LazyDialogModal)
 
@@ -59,7 +59,11 @@ async function toggleStatus(status: NoteStatus, action: string) {
 	try {
 		await noteStore.setStatus(props.note.id, status)
 	} catch (error) {
-		notifyFailure(action, error)
+		toast.add({
+			title: t('common.actionFailed', { action }),
+			description: error instanceof Error ? error.message : undefined,
+			color: 'error',
+		})
 	}
 }
 
@@ -81,7 +85,11 @@ async function handleDelete() {
 		// The note is gone for good, so its draft would be unreachable anyway.
 		draftStore.discard(draftStore.scopeFor(props.note.id))
 	} catch (error) {
-		notifyFailure(t('common.delete'), error)
+		toast.add({
+			title: t('common.actionFailed', { action: t('common.delete') }),
+			description: error instanceof Error ? error.message : undefined,
+			color: 'error',
+		})
 	}
 }
 

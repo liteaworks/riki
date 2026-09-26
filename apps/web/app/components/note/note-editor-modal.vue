@@ -10,6 +10,7 @@ const props = defineProps<{
 const open = defineModel<boolean>('open', { default: false })
 
 const { t } = useI18n()
+const toast = useToast()
 const appConfig = useAppConfig()
 const noteStore = useNoteStore()
 const draftStore = useDraftStore()
@@ -95,7 +96,11 @@ async function handleSend() {
 		draftStore.discard(draftScope.value)
 		open.value = false
 	} catch (error) {
-		notifyFailure(t('note.send'), error)
+		toast.add({
+			title: t('common.actionFailed', { action: t('note.send') }),
+			description: error instanceof Error ? error.message : undefined,
+			color: 'error',
+		})
 	} finally {
 		sending.value = false
 	}

@@ -3,7 +3,7 @@ import { notes, spaces } from '#server/db/schemas'
 import { listNotesQuerySchema } from '#shared/types/note'
 import { requireUser } from '#server/utils/session'
 import { readQueryZod } from '#server/utils/validation'
-import { and, desc, eq, getTableColumns, gt, lt, or } from 'drizzle-orm'
+import { and, desc, eq, getTableColumns, lt, or } from 'drizzle-orm'
 
 export function encodeNoteCursor(createdAt: Date, id: string): string {
 	return `${createdAt.getTime()}:${id}`
@@ -20,13 +20,11 @@ export default defineEventHandler(async (event) => {
 			)
 		: undefined
 
-	const sinceFilter = query.since ? gt(notes.updatedAt, new Date(query.since)) : undefined
-
 	const rows = await db
 		.select({ ...getTableColumns(notes), spaceName: spaces.name })
 		.from(notes)
 		.leftJoin(spaces, eq(spaces.id, notes.spaceId))
-		.where(and(eq(notes.userId, user.id), cursorFilter, sinceFilter))
+		.where(and(eq(notes.userId, user.id), cursorFilter))
 		.orderBy(desc(notes.createdAt), desc(notes.id))
 		.limit(query.limit + 1)
 
