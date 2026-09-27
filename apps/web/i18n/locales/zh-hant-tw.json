@@ -22,9 +22,6 @@
 		"backToApp": "返回應用程式",
 		"openAppMenu": "開啟應用程式選單"
 	},
-	"layout": {
-		"library": "筆記庫"
-	},
 	"auth": {
 		"signIn": "登入",
 		"signOut": "登出",
@@ -43,13 +40,18 @@
 	"note": {
 		"newNote": "新筆記",
 		"editorPlaceholder": "寫點什麼…",
-		"send": "發送",
+		"send": "傳送",
 		"save": "儲存",
 		"attachImage": "新增圖片",
 		"attachAudio": "新增錄音",
 		"attachLocation": "新增地點",
-		"inbox": "未歸類",
-		"wordCount": "{count} 字",
+		"inbox": "收件匣",
+		"library": "筆記庫",
+		"visibilityLabel": "可見性",
+		"publish": "發佈",
+		"visibilityPrivate": "私密",
+		"visibilityProtected": "僅登入使用者",
+		"visibilityPublic": "公開",
 		"createdAt": "建立於 {time}",
 		"updatedAt": "更新於 {time}",
 		"deleteTitle": "刪除筆記",

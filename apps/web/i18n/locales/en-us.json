@@ -22,9 +22,6 @@
 		"backToApp": "Back to app",
 		"openAppMenu": "Open app menu"
 	},
-	"layout": {
-		"library": "Library"
-	},
 	"auth": {
 		"signIn": "Sign in",
 		"signOut": "Sign out",
@@ -43,13 +40,18 @@
 	"note": {
 		"newNote": "New note",
 		"editorPlaceholder": "Write something...",
-		"send": "Send",
+		"send": "发送",
 		"save": "Save",
 		"attachImage": "Add image",
 		"attachAudio": "Record audio",
 		"attachLocation": "Add location",
 		"inbox": "Inbox",
-		"wordCount": "{count} characters",
+		"library": "Library",
+		"visibilityLabel": "Visibility",
+		"publish": "Publish",
+		"visibilityPrivate": "Private",
+		"visibilityProtected": "Signed-in users",
+		"visibilityPublic": "Public",
 		"createdAt": "Created {time}",
 		"updatedAt": "Updated {time}",
 		"deleteTitle": "Delete note",

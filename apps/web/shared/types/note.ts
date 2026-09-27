@@ -27,7 +27,6 @@ export const noteStatus = {
 export type NoteStatus = (typeof noteStatus)[keyof typeof noteStatus]
 export const noteStatusValues = Object.values(noteStatus) as [NoteStatus, ...NoteStatus[]]
 
-// A client-minted id makes a retried create the same request, not a duplicate.
 export const createNoteBodySchema = z.object({
 	id: z.string().trim().min(1).max(64).optional(),
 	content: z.string().trim().min(1),
@@ -50,6 +49,7 @@ export const updateNoteBodySchema = z
 		content: z.string().trim().min(1).optional(),
 		spaceId: z.union([z.string().trim().min(1), z.null()]).optional(),
 		tagNames: z.array(z.string().trim().min(1)).optional(),
+		visibility: z.enum(noteVisibility).optional(),
 		status: z.enum(noteStatus).optional(),
 		updatedAt: z.number().int().positive().optional(),
 	})
@@ -58,7 +58,8 @@ export const updateNoteBodySchema = z
 			body.content !== undefined ||
 			body.spaceId !== undefined ||
 			body.tagNames !== undefined ||
-			body.status !== undefined,
+			body.status !== undefined ||
+			body.visibility !== undefined,
 		{
 			message: 'Empty update',
 		},
@@ -85,6 +86,10 @@ export const listNotesQuerySchema = z.object({
 
 export type ListNotesQuery = z.output<typeof listNotesQuerySchema>
 
-export type NoteListItem = Note & { spaceName: string | null }
+export type NoteListItem = Note & {
+	spaceName: string | null
+	authorName: string | null
+	authorImage: string | null
+}
 
 export type ListNotesResponse = { items: NoteListItem[]; nextCursor: string | null }

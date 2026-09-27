@@ -22,9 +22,6 @@
 		"backToApp": "返回应用",
 		"openAppMenu": "打开应用菜单"
 	},
-	"layout": {
-		"library": "笔记库"
-	},
 	"auth": {
 		"signIn": "登录",
 		"signOut": "退出登录",
@@ -48,8 +45,13 @@
 		"attachImage": "添加图片",
 		"attachAudio": "录音",
 		"attachLocation": "添加地点",
-		"inbox": "未归类",
-		"wordCount": "{count} 字",
+		"inbox": "收件箱",
+		"library": "笔记库",
+		"visibilityLabel": "可见性",
+		"publish": "发布",
+		"visibilityPrivate": "私密",
+		"visibilityProtected": "仅登录用户",
+		"visibilityPublic": "公开",
 		"createdAt": "创建于 {time}",
 		"updatedAt": "更新于 {time}",
 		"deleteTitle": "删除笔记",

@@ -81,7 +81,7 @@ const spaceContextItems = computed<ContextMenuItem[][]>(() =>
 const items = computed<NavigationMenuItem[][]>(() => [
 	[
 		{
-			label: t('layout.library'),
+			label: t('note.library'),
 			icon: appConfig.ui.icons.file,
 			active: scope.value === 'library',
 			onSelect: () => {

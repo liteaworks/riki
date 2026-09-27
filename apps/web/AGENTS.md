@@ -61,6 +61,7 @@
 
 - `shared/` holds pure zod schemas and types only - no drizzle runtime imports. Enums are const objects plus `keyof typeof`; drizzle enum columns consume pre-exported Values tuples.
 - Every handler starts with `const user = await requireUser(event)` (`server/utils/session.ts` → 401). Scope all queries by `userId`; missing and not-owned both return 404 so existence never leaks.
+- `GET /api/notes` is the one anonymous-tolerant handler, because the home timeline doubles as the public feed. It resolves the viewer with `getSessionUser` (null, not 401) and widens the read set: private is owner-only, protected needs a session, public is open. Null a foreign note's `spaceName` - a space is a private taxonomy - and never serve an archived note.
 - Validate with `readBodyZod` / `readQueryZod` (`server/utils/validation.ts`, explicit 400). Resolve tag names with `resolveTagIdsForNames` (`server/utils/note-tags.ts`). No silent failures, no inline glue duplication.
 - No `db.transaction` on libsql - one `db.batch([...])` per atomic multi-statement write. Order statements defensively (e.g. delete links before notes) instead of relying on FK pragmas.
 - REST: POST returns 201 + `Location` + row; PATCH returns the updated row; DELETE returns `{ id }`. A deleted note is archived via `PATCH { status: 'archived' }`; `DELETE` stays a hard delete.

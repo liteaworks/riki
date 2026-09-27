@@ -18,42 +18,49 @@ const overlay = useOverlay()
 const appConfig = useAppConfig()
 const noteStore = useNoteStore()
 const draftStore = useDraftStore()
+const session = useAuth().useSession()
 
 const confirmDialog = overlay.create(LazyDialogModal)
+
+const isOwn = computed(() => props.note.userId === session.value.data?.user?.id)
 
 const isPinned = computed(() => props.note.status === noteStatus.pinned)
 const isArchived = computed(() => props.note.status === noteStatus.archived)
 
-const menuItems = computed<ContextMenuItem[][]>(() => [
-	[
-		{
-			label: isPinned.value ? t('note.unpin') : t('note.pin'),
-			icon: appConfig.ui.icons.pin,
-			onSelect: () =>
-				toggleStatus(
-					isPinned.value ? noteStatus.normal : noteStatus.pinned,
-					isPinned.value ? t('note.unpin') : t('note.pin'),
-				),
-		},
-		{
-			label: isArchived.value ? t('note.unarchive') : t('note.archive'),
-			icon: appConfig.ui.icons.archive,
-			onSelect: () =>
-				toggleStatus(
-					isArchived.value ? noteStatus.normal : noteStatus.archived,
-					isArchived.value ? t('note.unarchive') : t('note.archive'),
-				),
-		},
-	],
-	[
-		{
-			label: t('common.delete'),
-			icon: appConfig.ui.icons.trash,
-			color: 'error',
-			onSelect: () => openDeleteDialog(),
-		},
-	],
-])
+const menuItems = computed<ContextMenuItem[][]>(() =>
+	isOwn.value
+		? [
+				[
+					{
+						label: isPinned.value ? t('note.unpin') : t('note.pin'),
+						icon: appConfig.ui.icons.pin,
+						onSelect: () =>
+							toggleStatus(
+								isPinned.value ? noteStatus.normal : noteStatus.pinned,
+								isPinned.value ? t('note.unpin') : t('note.pin'),
+							),
+					},
+					{
+						label: isArchived.value ? t('note.unarchive') : t('note.archive'),
+						icon: appConfig.ui.icons.archive,
+						onSelect: () =>
+							toggleStatus(
+								isArchived.value ? noteStatus.normal : noteStatus.archived,
+								isArchived.value ? t('note.unarchive') : t('note.archive'),
+							),
+					},
+				],
+				[
+					{
+						label: t('common.delete'),
+						icon: appConfig.ui.icons.trash,
+						color: 'error' as const,
+						onSelect: handleDelete,
+					},
+				],
+			]
+		: [],
+)
 
 async function toggleStatus(status: NoteStatus, action: string) {
 	try {
@@ -97,7 +104,13 @@ const markdownComponents = { a: NoteLink, tag: NoteTag }
 
 const isUnsynced = computed(() => noteStore.isPending(props.note.id))
 const draftScope = computed(() => draftStore.scopeFor(props.note.id))
-const hasDraft = computed(() => draftStore.isDirty(draftScope.value, props.note.content))
+const hasDraft = computed(
+	() => isOwn.value && draftStore.isDirty(draftScope.value, props.note.content),
+)
+
+function onSelect() {
+	if (isOwn.value) emit('select', props.note)
+}
 
 function onRetry() {
 	void noteStore.retryNote(props.note.id)
@@ -120,8 +133,9 @@ const absoluteHint = computed(() => {
 <template>
 	<UContextMenu :items="menuItems">
 		<div
-			class="group/note-item-card flex w-full cursor-pointer flex-col rounded-2xl bg-muted p-1 select-text dark:bg-muted/50"
-			@click="emit('select', props.note)"
+			class="group/note-item-card flex w-full flex-col rounded-2xl bg-muted p-1 select-text dark:bg-muted/50"
+			:class="isOwn && 'cursor-pointer'"
+			@click="onSelect"
 		>
 			<article class="h-full rounded-xl bg-default p-2 py-1">
 				<Markdown :value="props.note.content" :components="markdownComponents" />
@@ -145,9 +159,15 @@ const absoluteHint = computed(() => {
 						<span>{{ relativeTime }}</span>
 					</UTooltip>
 				</div>
-				<div v-if="props.note.spaceName" class="flex shrink-0 items-center gap-1">
-					<UIcon :name="appConfig.ui.icons.folder" class="size-3.5" />
-					<span class="max-w-24 truncate">{{ props.note.spaceName }}</span>
+				<div class="flex shrink-0 items-center gap-1">
+					<span v-if="!isOwn && props.note.authorName" class="flex min-w-0 items-center gap-1">
+						<UIcon :name="appConfig.ui.icons.user" class="size-3.5 shrink-0" />
+						<span class="max-w-24 truncate">{{ props.note.authorName }}</span>
+					</span>
+					<div v-if="props.note.spaceName" class="flex shrink-0 items-center gap-1">
+						<UIcon :name="appConfig.ui.icons.folder" class="size-3.5" />
+						<span class="max-w-24 truncate">{{ props.note.spaceName }}</span>
+					</div>
 				</div>
 			</div>
 		</div>

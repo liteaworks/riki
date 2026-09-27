@@ -46,6 +46,7 @@ export default defineEventHandler(async (event) => {
 			...(body.content !== undefined && { content: body.content }),
 			...(body.spaceId !== undefined && { spaceId: body.spaceId }),
 			...(body.status !== undefined && { status: body.status }),
+			...(body.visibility !== undefined && { visibility: body.visibility }),
 			...(body.updatedAt !== undefined && {
 				updatedAt: new Date(Math.min(body.updatedAt, Date.now())),
 			}),

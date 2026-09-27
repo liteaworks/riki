@@ -30,6 +30,7 @@ export const iconsTheme = {
 	info: 'ph:info',
 	light: 'ph:sun',
 	loading: 'ph:circle-notch',
+	lock: 'ph:lock-simple',
 	menu: 'ph:list',
 	minus: 'ph:minus',
 	panelClose: 'ph:caret-left',

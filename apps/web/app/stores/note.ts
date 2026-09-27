@@ -114,7 +114,6 @@ export const useNoteStore = defineStore('note', () => {
 		},
 	)
 
-	// One row per note: a newer local edit replaces the queued one.
 	function enqueue(row: OutboxRow) {
 		outbox.value = [...outbox.value.filter((item) => item.noteId !== row.noteId), row]
 	}
@@ -141,7 +140,6 @@ export const useNoteStore = defineStore('note', () => {
 		outbox.value = outbox.value.filter((row) => row.noteId !== noteId)
 	}
 
-	// A client-minted id makes POST retryable; PATCH carries last-write-wins.
 	async function push(row: OutboxRow) {
 		const body = {
 			content: row.payload.content,
@@ -155,9 +153,16 @@ export const useNoteStore = defineStore('note', () => {
 			await $fetch<Note>('/api/notes', { method: 'POST', body: { id: row.noteId, ...body } })
 			return
 		}
-		// PATCH returns the winning row, so a write that lost still converges.
 		const winner = await $fetch<Note>(`/api/notes/${row.noteId}`, { method: 'PATCH', body })
-		mergeIncoming([{ ...winner, spaceName: spaceNameOf(winner.spaceId) }])
+		const author = session.value.data?.user
+		mergeIncoming([
+			{
+				...winner,
+				spaceName: spaceNameOf(winner.spaceId),
+				authorName: author?.name ?? null,
+				authorImage: author?.image ?? null,
+			},
+		])
 	}
 
 	async function flush() {
@@ -172,7 +177,6 @@ export const useNoteStore = defineStore('note', () => {
 				await push(row)
 				settle(row.noteId)
 			} catch (error) {
-				// 4xx will never succeed, so drop the intent; 5xx and network back off.
 				const status = statusOf(error)
 				if (status >= 400 && status < 500) {
 					settle(row.noteId)
@@ -213,6 +217,17 @@ export const useNoteStore = defineStore('note', () => {
 		}
 	}
 
+	watch(
+		() => (session.value.isPending ? undefined : (session.value.data?.user?.id ?? 'anonymous')),
+		(key, previous) => {
+			if (import.meta.server || key === previous) return
+			nextCursor.value = null
+			paginationDone.value = false
+			void loadMore()
+		},
+		{ immediate: true },
+	)
+
 	async function retryNote(id: string) {
 		if (!outbox.value.some((row) => row.noteId === id)) return
 		outbox.value = outbox.value.map((row) =>
@@ -224,12 +239,15 @@ export const useNoteStore = defineStore('note', () => {
 	async function create(input: CreateNoteInput) {
 		const now = new Date()
 		const spaceId = input.spaceId ?? null
+		const author = session.value.data?.user
 		const note: NoteListItem = {
 			id: newId(),
-			userId: session.value.data?.user?.id ?? '',
+			userId: author?.id ?? '',
 			content: input.content,
 			spaceId,
 			spaceName: spaceNameOf(spaceId),
+			authorName: author?.name ?? null,
+			authorImage: author?.image ?? null,
 			visibility: input.visibility ?? noteVisibility.private,
 			status: input.status ?? noteStatus.normal,
 			createdAt: now,
@@ -244,18 +262,19 @@ export const useNoteStore = defineStore('note', () => {
 	async function update(id: string, body: UpdateNoteBody) {
 		const index = indexOf(id)
 		const previous = notes.value[index]
-		// Returning quietly would drop the user's edit: the cache can lose a note
-		// to a concurrent archive while the editor is open.
 		if (!previous) throw new Error(`Cannot update unknown note ${id}`)
+
 		const next: NoteListItem = {
 			...previous,
 			content: body.content ?? previous.content,
 			spaceId: body.spaceId === undefined ? previous.spaceId : body.spaceId,
 			spaceName: body.spaceId === undefined ? previous.spaceName : spaceNameOf(body.spaceId),
+			visibility: body.visibility ?? previous.visibility,
 			status: body.status ?? previous.status,
 			updatedAt: new Date(),
 		}
 		notes.value[index] = next
+
 		enqueueFor(next, 'update', body.tagNames)
 		await flush()
 		return next
@@ -278,12 +297,9 @@ export const useNoteStore = defineStore('note', () => {
 		return unsyncedIds.value.has(id)
 	}
 
-	// App-lifetime on purpose, so it outlives the calling component. No polling:
-	// a timer would spend D1 reads on every tick to find nothing to do.
 	function start() {
 		if (import.meta.server || started) return
 		started = true
-		void loadMore()
 		useEventListener(window, 'online', () => void flush())
 	}
 
