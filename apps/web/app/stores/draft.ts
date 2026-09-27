@@ -31,15 +31,15 @@ export const useDraftStore = defineStore('draft', () => {
 	const authClient = useAuth()
 	const session = authClient.useSession()
 
-	// scope -> serialised entry. skipHydrate, or the SSR default clobbers it.
 	const drafts = skipHydrate(useLocalStorage<Record<string, string>>(localKeys.drafts, {}))
+	const lastUserId = skipHydrate(useLocalStorage<string | null>(localKeys.userId, null))
 
 	const timers = new Map<string, ReturnType<typeof setTimeout>>()
 
-	const userId = computed(() => session.value.data?.user?.id)
-
-	// A draft under a placeholder scope is unreadable once the real id arrives.
-	const isIdentified = computed(() => Boolean(userId.value))
+	const userId = computed(() => session.value.data?.user?.id ?? lastUserId.value)
+	watch(userId, (id) => {
+		if (id) lastUserId.value = id
+	})
 
 	function scopeFor(noteId?: string | null) {
 		return `${userId.value ?? 'anonymous'}:${noteId ?? 'new'}`
@@ -60,7 +60,7 @@ export const useDraftStore = defineStore('draft', () => {
 	}
 
 	function save(scope: string, content: string) {
-		if (import.meta.server || !isIdentified.value) return
+		if (import.meta.server) return
 		const pending = timers.get(scope)
 		if (pending) clearTimeout(pending)
 		timers.set(

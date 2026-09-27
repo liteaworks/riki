@@ -60,8 +60,6 @@ export const useNoteStore = defineStore('note', () => {
 	const spaceStore = useSpaceStore()
 	const online = useOnline()
 
-	// The timeline renders from this cache. skipHydrate, or Pinia hydrates the
-	// empty SSR default over it on every page load.
 	const notes = skipHydrate(useLocalStorage<NoteListItem[]>(localKeys.notes, []))
 	const outbox = skipHydrate(useLocalStorage<OutboxRow[]>(localKeys.outbox, []))
 	const nextCursor = skipHydrate(useLocalStorage<string | null>(localKeys.notesCursor, null))
@@ -70,11 +68,13 @@ export const useNoteStore = defineStore('note', () => {
 	const paginationDone = ref(false)
 	let started = false
 
-	// Only a write that has not landed is worth a badge; mere row presence flashed
-	// on every successful online write.
 	const unsyncedIds = computed(() => {
-		const rows = online.value ? outbox.value.filter((row) => row.state === 'failed') : outbox.value
-		return new Set(rows.map((row) => row.noteId))
+		if (!online.value) return new Set(outbox.value.map((row) => row.noteId))
+		return new Set(
+			outbox.value
+				.filter((row) => row.attempts > 0 || row.state === 'failed')
+				.map((row) => row.noteId),
+		)
 	})
 
 	function indexOf(id: string) {

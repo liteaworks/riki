@@ -5,4 +5,5 @@ export const localKeys = {
 	notesCursor: `${PREFIX}.notes.cursor`,
 	outbox: `${PREFIX}.outbox`,
 	drafts: `${PREFIX}.drafts`,
+	userId: `${PREFIX}.userId`,
 } as const

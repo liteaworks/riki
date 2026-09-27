@@ -28,6 +28,8 @@
 - Conflicts resolve last-write-wins on `updatedAt`, enforced on both ends: the server ignores a write older than the stored row and answers with the winning row, and the client adopts that answer. Deletion is `status: 'archived'`; there is no tombstone column.
 - The server must clamp a client `updatedAt` to server time. A user can set their device clock years ahead, which would otherwise pin a note in the future and make every later last-write-wins comparison lose.
 - No polling. A retry only earns its keep once something has actually failed, so the queue is driven by user writes and by the browser's `online` event. A write that fails while online keeps its badge until the next write, the next reconnect, or a click on the badge.
+- `navigator.onLine` is not a reachability probe: it stays `true` through DNS failure, an unreachable server, and captive portals. Never gate a not-synced indicator on it alone - badge a write that has actually failed to send.
+- Anything keyed by user id must stay writable while the session cannot be fetched. Offline, `/api/auth/get-session` fails, so cache the last resolved id; gating a local write on a live session drops it silently.
 - Deletion is `status: 'archived'`; there is no tombstone column.
 - Drafts are per user and per note, written on a debounce, restored on reopen, and discarded on save. A discard must also cancel any debounced write still in flight, or unmounting resurrects the saved note as a stale draft.
 - Polling pulls ask for deltas (`?since=`) and only advance the sync point past a response they know is complete.
