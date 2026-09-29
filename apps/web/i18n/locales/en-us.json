@@ -40,7 +40,7 @@
 	"note": {
 		"newNote": "New note",
 		"editorPlaceholder": "Write something...",
-		"send": "发送",
+		"send": "Send",
 		"save": "Save",
 		"attachImage": "Add image",
 		"attachAudio": "Record audio",
@@ -92,5 +92,24 @@
 				"system": "System"
 			}
 		}
+	},
+	"view": {
+		"label": "Views",
+		"pinned": "Pinned",
+		"name": "Name",
+		"new": "New view",
+		"tags": "Tags",
+		"pinnedOnly": "Pinned only",
+		"clearFilter": "Clear filter",
+		"createTitle": "New view",
+		"editTitle": "Rename view",
+		"deleteTitle": "Delete view",
+		"deleteDescription": "Delete the view {name}?",
+		"pin": "Pin",
+		"unpin": "Unpin",
+		"editDescription": "Change the name and the notes this view matches.",
+		"createDescription": "Pick the notes this view matches.",
+		"search": "Search",
+		"filter": "Filter"
 	}
 }

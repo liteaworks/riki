@@ -1,9 +1,22 @@
 import { db } from '#server/utils/db'
-import { notes, spaces, user } from '#server/db/schemas'
+import { noteTags, notes, spaces, user } from '#server/db/schemas'
 import { listNotesQuerySchema, noteStatus, noteVisibility } from '#shared/types/note'
 import { getSessionUser } from '#server/utils/session'
 import { readQueryZod } from '#server/utils/validation'
-import { and, desc, eq, getColumns, lt, ne, or } from 'drizzle-orm'
+import {
+	and,
+	desc,
+	eq,
+	exists,
+	getColumns,
+	inArray,
+	isNull,
+	like,
+	lt,
+	ne,
+	or,
+	sql,
+} from 'drizzle-orm'
 
 export function encodeNoteCursor(createdAt: Date, id: string): string {
 	return `${createdAt.getTime()}:${id}`
@@ -24,6 +37,10 @@ export default defineEventHandler(async (event) => {
 		? or(eq(notes.userId, viewerId), ne(notes.visibility, noteVisibility.private))
 		: eq(notes.visibility, noteVisibility.public)
 
+	const statusFilter = query.pinnedOnly
+		? eq(notes.status, noteStatus.pinned)
+		: inArray(notes.status, [noteStatus.normal, noteStatus.pinned])
+
 	const rows = await db
 		.select({
 			...getColumns(notes),
@@ -34,7 +51,26 @@ export default defineEventHandler(async (event) => {
 		.from(notes)
 		.leftJoin(spaces, eq(spaces.id, notes.spaceId))
 		.innerJoin(user, eq(user.id, notes.userId))
-		.where(and(readable, cursorFilter, eq(notes.status, noteStatus.normal), eq(user.banned, false)))
+		.where(
+			and(
+				cursorFilter,
+				readable,
+				statusFilter,
+				eq(user.banned, false),
+				query.noSpace ? isNull(notes.spaceId) : undefined,
+				query.spaceId ? eq(notes.spaceId, query.spaceId) : undefined,
+				query.visibility?.length ? inArray(notes.visibility, query.visibility) : undefined,
+				query.q ? like(notes.content, `%${query.q.replace(/[%_]/g, '')}%`) : undefined,
+				query.tagId
+					? exists(
+							db
+								.select({ one: sql`1` })
+								.from(noteTags)
+								.where(and(eq(noteTags.noteId, notes.id), eq(noteTags.tagId, query.tagId))),
+						)
+					: undefined,
+			),
+		)
 		.orderBy(desc(notes.createdAt), desc(notes.id))
 		.limit(query.limit + 1)
 

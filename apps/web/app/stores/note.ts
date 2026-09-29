@@ -10,6 +10,7 @@ import type {
 	NoteStatus,
 	UpdateNoteBody,
 } from '#shared/types/note'
+import type { ViewFilter } from '#shared/types/view'
 import { newId } from '#shared/utils/id'
 
 type NoteVisibilityValue = (typeof noteVisibility)[keyof typeof noteVisibility]
@@ -59,6 +60,46 @@ export const useNoteStore = defineStore('note', () => {
 	const session = authClient.useSession()
 	const spaceStore = useSpaceStore()
 	const online = useOnline()
+
+	const viewStore = useViewStore()
+
+	const keyword = ref('')
+	const debouncedKeyword = refDebounced(keyword, 400)
+	const visibilityFilter = ref<NoteVisibilityValue[]>([])
+	const tagFilter = ref<string[]>([])
+	const pinnedOnly = ref(false)
+
+	const activeFilter = computed<ViewFilter>(() => {
+		const base = viewStore.baseFilter
+		const q = debouncedKeyword.value.trim()
+		return {
+			...base,
+			...(q && { q }),
+			...(visibilityFilter.value.length && { visibility: visibilityFilter.value }),
+			...(tagFilter.value.length && {
+				tagIds: [...new Set([...(base.tagIds ?? []), ...tagFilter.value])],
+			}),
+			...(pinnedOnly.value && { pinnedOnly: true }),
+		}
+	})
+
+	const visibleNotes = computed(() => {
+		const q = keyword.value.trim().toLowerCase()
+		return notes.value.filter((note) => {
+			if (q && !note.content.toLowerCase().includes(q)) return false
+			if (visibilityFilter.value.length && !visibilityFilter.value.includes(note.visibility))
+				return false
+			if (pinnedOnly.value && note.status !== noteStatus.pinned) return false
+			return true
+		})
+	})
+
+	function resetFilter() {
+		keyword.value = ''
+		visibilityFilter.value = []
+		tagFilter.value = []
+		pinnedOnly.value = false
+	}
 
 	const notes = skipHydrate(useLocalStorage<NoteListItem[]>(localKeys.notes, []))
 	const outbox = skipHydrate(useLocalStorage<OutboxRow[]>(localKeys.outbox, []))
@@ -202,10 +243,20 @@ export const useNoteStore = defineStore('note', () => {
 	async function loadMore() {
 		if (pending.value || !online.value) return
 		if (paginationDone.value) return
+		const filter = activeFilter.value
+		const spaceId = filter.spaceId === undefined ? undefined : (filter.spaceId ?? null)
 		pending.value = true
 		try {
 			const data = await $fetch<ListNotesResponse>('/api/notes', {
-				query: { limit: PAGE_SIZE, ...(nextCursor.value ? { cursor: nextCursor.value } : {}) },
+				query: {
+					limit: PAGE_SIZE,
+					...(nextCursor.value ? { cursor: nextCursor.value } : {}),
+					...(spaceId === null ? { noSpace: true } : spaceId ? { spaceId } : {}),
+					...(filter.tagIds?.[0] ? { tagId: filter.tagIds[0] } : {}),
+					...(filter.visibility?.length ? { visibility: filter.visibility } : {}),
+					...(filter.pinnedOnly ? { pinnedOnly: true } : {}),
+					...(filter.q ? { q: filter.q } : {}),
+				},
 			})
 			mergeIncoming(data.items)
 			nextCursor.value = data.nextCursor
@@ -218,7 +269,10 @@ export const useNoteStore = defineStore('note', () => {
 	}
 
 	watch(
-		() => (session.value.isPending ? undefined : (session.value.data?.user?.id ?? 'anonymous')),
+		() =>
+			[
+				session.value.isPending ? undefined : (session.value.data?.user?.id ?? 'anonymous'),
+			] as const,
 		(key, previous) => {
 			if (import.meta.server || key === previous) return
 			nextCursor.value = null
@@ -226,6 +280,16 @@ export const useNoteStore = defineStore('note', () => {
 			void loadMore()
 		},
 		{ immediate: true },
+	)
+
+	watch(
+		() => JSON.stringify(activeFilter.value),
+		() => {
+			if (import.meta.server) return
+			nextCursor.value = null
+			paginationDone.value = false
+			void loadMore()
+		},
 	)
 
 	async function retryNote(id: string) {
@@ -305,8 +369,15 @@ export const useNoteStore = defineStore('note', () => {
 
 	return {
 		notes,
+		visibleNotes,
+		keyword,
+		visibilityFilter,
+		tagFilter,
+		pinnedOnly,
+		activeFilter,
 		pending,
 		syncing,
+		resetFilter,
 		loadMore,
 		start,
 		flush,

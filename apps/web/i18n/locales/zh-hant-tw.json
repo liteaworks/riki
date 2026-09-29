@@ -94,5 +94,24 @@
 				"switchToLight": "切換到淺色模式"
 			}
 		}
+	},
+	"view": {
+		"label": "檢視",
+		"pinned": "置頂",
+		"name": "名稱",
+		"new": "新增檢視",
+		"tags": "標籤",
+		"pinnedOnly": "僅看置頂",
+		"clearFilter": "清除篩選",
+		"createTitle": "新增檢視",
+		"editTitle": "重新命名檢視",
+		"deleteTitle": "刪除檢視",
+		"deleteDescription": "刪除檢視 {name}？",
+		"pin": "置頂",
+		"unpin": "取消置頂",
+		"editDescription": "修改名稱與該檢視符合的筆記。",
+		"createDescription": "選擇該檢視要符合的筆記。",
+		"search": "搜尋",
+		"filter": "篩選"
 	}
 }

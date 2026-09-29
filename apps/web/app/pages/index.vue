@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const noteStore = useNoteStore()
-const { notes } = storeToRefs(noteStore)
+const { visibleNotes } = storeToRefs(noteStore)
 
 const scrollArea = useTemplateRef<{
 	$el: HTMLElement
@@ -21,16 +21,17 @@ onMounted(() => {
 	)
 })
 
-watch(() => notes.value[0]?.id, scrollToTop)
+watch(() => visibleNotes.value[0]?.id, scrollToTop)
 </script>
 
 <template>
 	<NoteSidebar />
 	<div class="relative flex min-w-0 flex-1 flex-col items-center overflow-hidden">
+		<NoteSearchInput class="w-full max-w-3xl" />
 		<UScrollArea
 			ref="scrollArea"
 			v-slot="{ item }"
-			:items="notes"
+			:items="visibleNotes"
 			shadow
 			:virtualize="{ gap: 8, lanes: 3, estimateSize: 200 }"
 			class="size-full p-2"

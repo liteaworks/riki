@@ -82,6 +82,15 @@ const noteCursorSchema = z
 export const listNotesQuerySchema = z.object({
 	limit: z.coerce.number().int().min(1).max(50).default(20),
 	cursor: noteCursorSchema.optional(),
+	spaceId: z.string().trim().min(1).optional(),
+	noSpace: z.coerce.boolean().optional(),
+	tagId: z.string().trim().min(1).optional(),
+	visibility: z.preprocess(
+		(value) => (value === undefined ? undefined : Array.isArray(value) ? value : [value]),
+		z.array(z.enum(noteVisibility)).optional(),
+	),
+	pinnedOnly: z.coerce.boolean().optional(),
+	q: z.string().trim().min(1).optional(),
 })
 
 export type ListNotesQuery = z.output<typeof listNotesQuerySchema>

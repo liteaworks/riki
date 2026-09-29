@@ -92,5 +92,24 @@
 				"system": "跟随系统"
 			}
 		}
+	},
+	"view": {
+		"label": "视图",
+		"pinned": "置顶",
+		"name": "名称",
+		"new": "新建视图",
+		"tags": "标签",
+		"pinnedOnly": "仅看置顶",
+		"clearFilter": "清除筛选",
+		"createTitle": "新建视图",
+		"editTitle": "重命名视图",
+		"deleteTitle": "删除视图",
+		"deleteDescription": "删除视图 {name}?",
+		"pin": "置顶",
+		"unpin": "取消置顶",
+		"editDescription": "修改名称与该视图匹配的笔记。",
+		"createDescription": "选择该视图要匹配的笔记。",
+		"search": "搜索",
+		"filter": "筛选"
 	}
 }
