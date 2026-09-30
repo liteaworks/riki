@@ -1,9 +1,25 @@
 import * as z from 'zod'
-import type { sidebar, views } from '#server/db/schemas/note-schema'
 import { noteVisibility } from './note'
 
-export type View = typeof views.$inferSelect
-export type SidebarEntry = typeof sidebar.$inferSelect
+export interface View {
+	id: string
+	name: string
+	filter: ViewFilter
+	position: number
+	userId: string
+	createdAt: Date
+	updatedAt: Date
+}
+
+export interface SidebarEntry {
+	id: string
+	kind: SidebarKind
+	targetId: string
+	position: number
+	userId: string
+	createdAt: Date
+	updatedAt: Date
+}
 
 export const sidebarKind = {
 	view: 'view',
@@ -13,8 +29,6 @@ export const sidebarKind = {
 export type SidebarKind = (typeof sidebarKind)[keyof typeof sidebarKind]
 export const sidebarKindValues = Object.values(sidebarKind) as [SidebarKind, ...SidebarKind[]]
 
-// Library and Inbox are code constants, not rows: always at the head of the pinned
-// section, never renamed, reordered, unpinned or deleted.
 export const builtinView = {
 	library: 'library',
 	inbox: 'inbox',

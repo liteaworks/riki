@@ -1,12 +1,31 @@
 import * as z from 'zod'
-import type { notes, spaces, tags } from '#server/db/schemas/note-schema'
 
-export type Note = typeof notes.$inferSelect
-export type NewNote = typeof notes.$inferInsert
-export type Space = typeof spaces.$inferSelect
-export type NewSpace = typeof spaces.$inferInsert
-export type Tag = typeof tags.$inferSelect
-export type NewTag = typeof tags.$inferInsert
+export interface Note {
+	id: string
+	content: string
+	userId: string
+	spaceId: string | null
+	visibility: NoteVisibility
+	status: NoteStatus
+	createdAt: Date
+	updatedAt: Date
+}
+
+export interface Space {
+	id: string
+	name: string
+	userId: string
+	createdAt: Date
+	updatedAt: Date
+}
+
+export interface Tag {
+	id: string
+	name: string
+	userId: string
+	createdAt: Date
+	updatedAt: Date
+}
 
 export const noteVisibility = {
 	private: 'private',
