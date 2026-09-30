@@ -1,9 +1,9 @@
 import { db } from '#server/utils/db'
 import { notes, noteTags, tags } from '#server/db/schemas'
 import { listTagsQuerySchema } from '#shared/types/tag'
+import { noteStatus } from '#shared/types/note'
 import { requireUser } from '#server/utils/session'
-import { readQueryZod } from '#server/utils/validation'
-import { and, asc, desc, eq, like, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, like, sql } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
 	const user = await requireUser(event)
@@ -22,7 +22,14 @@ export default defineEventHandler(async (event) => {
 		})
 		.from(tags)
 		.leftJoin(noteTags, eq(noteTags.tagId, tags.id))
-		.leftJoin(notes, and(eq(notes.id, noteTags.noteId), eq(notes.userId, user.id)))
+		.leftJoin(
+			notes,
+			and(
+				eq(notes.id, noteTags.noteId),
+				eq(notes.userId, user.id),
+				inArray(notes.status, [noteStatus.normal, noteStatus.pinned]),
+			),
+		)
 		.where(scope)
 		.groupBy(tags.id)
 		.orderBy(desc(sql`count(${notes.id})`), asc(tags.name))

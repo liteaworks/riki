@@ -61,12 +61,16 @@ export default defineEventHandler(async (event) => {
 				query.spaceId ? eq(notes.spaceId, query.spaceId) : undefined,
 				query.visibility?.length ? inArray(notes.visibility, query.visibility) : undefined,
 				query.q ? like(notes.content, `%${query.q.replace(/[%_]/g, '')}%`) : undefined,
-				query.tagId
-					? exists(
-							db
-								.select({ one: sql`1` })
-								.from(noteTags)
-								.where(and(eq(noteTags.noteId, notes.id), eq(noteTags.tagId, query.tagId))),
+				query.tagIds?.length
+					? and(
+							...query.tagIds.map((tagId) =>
+								exists(
+									db
+										.select({ one: sql`1` })
+										.from(noteTags)
+										.where(and(eq(noteTags.noteId, notes.id), eq(noteTags.tagId, tagId))),
+								),
+							),
 						)
 					: undefined,
 			),

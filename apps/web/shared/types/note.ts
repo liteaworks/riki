@@ -84,7 +84,10 @@ export const listNotesQuerySchema = z.object({
 	cursor: noteCursorSchema.optional(),
 	spaceId: z.string().trim().min(1).optional(),
 	noSpace: z.coerce.boolean().optional(),
-	tagId: z.string().trim().min(1).optional(),
+	tagIds: z.preprocess(
+		(value) => (value === undefined ? undefined : Array.isArray(value) ? value : [value]),
+		z.array(z.string().trim().min(1)).optional(),
+	),
 	visibility: z.preprocess(
 		(value) => (value === undefined ? undefined : Array.isArray(value) ? value : [value]),
 		z.array(z.enum(noteVisibility)).optional(),

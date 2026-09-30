@@ -220,8 +220,13 @@ export const useNoteStore = defineStore('note', () => {
 			} catch (error) {
 				const status = statusOf(error)
 				if (status >= 400 && status < 500) {
+					// A create the server rejected never existed there, and a 404 means
+					// the note is gone remotely — keeping either would let it win LWW forever.
+					if (status === 404 || row.kind === 'create') {
+						notes.value = notes.value.filter((note) => note.id !== row.noteId)
+					}
 					settle(row.noteId)
-					continue
+					throw error
 				}
 				const attempts = row.attempts + 1
 				outbox.value = outbox.value.map((item) =>
@@ -252,7 +257,7 @@ export const useNoteStore = defineStore('note', () => {
 					limit: PAGE_SIZE,
 					...(nextCursor.value ? { cursor: nextCursor.value } : {}),
 					...(spaceId === null ? { noSpace: true } : spaceId ? { spaceId } : {}),
-					...(filter.tagIds?.[0] ? { tagId: filter.tagIds[0] } : {}),
+					...(filter.tagIds?.length ? { tagIds: filter.tagIds } : {}),
 					...(filter.visibility?.length ? { visibility: filter.visibility } : {}),
 					...(filter.pinnedOnly ? { pinnedOnly: true } : {}),
 					...(filter.q ? { q: filter.q } : {}),
@@ -297,7 +302,7 @@ export const useNoteStore = defineStore('note', () => {
 		outbox.value = outbox.value.map((row) =>
 			row.noteId === id ? { ...row, state: 'pending' as const, attempts: 0, nextRetryAt: 0 } : row,
 		)
-		await flush()
+		await flush().catch(() => {})
 	}
 
 	async function create(input: CreateNoteInput) {
@@ -354,7 +359,7 @@ export const useNoteStore = defineStore('note', () => {
 		if (!previous) return
 		notes.value.splice(index, 1)
 		enqueueFor({ ...previous, status: noteStatus.archived, updatedAt: new Date() }, 'update')
-		void flush()
+		void flush().catch(() => {})
 	}
 
 	function isPending(id: string) {
@@ -364,7 +369,7 @@ export const useNoteStore = defineStore('note', () => {
 	function start() {
 		if (import.meta.server || started) return
 		started = true
-		useEventListener(window, 'online', () => void flush())
+		useEventListener(window, 'online', () => void flush().catch(() => {}))
 	}
 
 	return {
