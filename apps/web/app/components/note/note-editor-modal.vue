@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { noteVisibility } from '#shared/types/note'
+import { noteVisibility, noteVisibilityValues } from '#shared/types/note'
 import type { Note, NoteVisibility } from '#shared/types/note'
 import type { DropdownMenuItem } from '@nuxt/ui'
+import { noteVisibilityMeta } from '~/utils/note-visibility'
 import { tagMention } from '~/utils/tiptap-tag'
 
 const props = defineProps<{
@@ -75,27 +76,22 @@ const addItems = computed<DropdownMenuItem[][]>(() => [
 	],
 ])
 
-const visibilityOptions = [
-	{ value: noteVisibility.private, label: 'note.visibilityPrivate', icon: 'lock' },
-	{ value: noteVisibility.protected, label: 'note.visibilityProtected', icon: 'user' },
-	{ value: noteVisibility.public, label: 'note.visibilityPublic', icon: 'globe' },
-] as const
-
 const visibilityItems = computed<DropdownMenuItem[][]>(() => [
-	visibilityOptions.map((option) => ({
-		type: 'checkbox' as const,
-		label: t(option.label),
-		icon: appConfig.ui.icons[option.icon],
-		checked: visibility.value === option.value,
-		onSelect: () => {
-			visibility.value = option.value
-		},
-	})),
+	noteVisibilityValues.map((value) => {
+		const option = noteVisibilityMeta[value]
+		return {
+			type: 'checkbox' as const,
+			label: t(option.label),
+			icon: appConfig.ui.icons[option.icon],
+			checked: visibility.value === value,
+			onSelect: () => {
+				visibility.value = value
+			},
+		}
+	}),
 ])
 
-const currentVisibility = computed(() =>
-	visibilityOptions.find((option) => option.value === visibility.value)!,
-)
+const currentVisibility = computed(() => noteVisibilityMeta[visibility.value])
 
 const submitLabel = computed(() => {
 	const publishing = visibility.value === noteVisibility.public

@@ -72,7 +72,7 @@ export const useViewStore = defineStore('view', () => {
 	}
 
 	async function load() {
-		if (import.meta.server || loaded.value) return
+		if (import.meta.server || loaded.value || pending.value) return
 		pending.value = true
 		try {
 			await refresh()

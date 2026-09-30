@@ -4,15 +4,15 @@ const props = defineProps<{
 	description?: string
 	icon?: string
 	destructive?: boolean
-	onConfirm?: () => void
+	onConfirm?: () => void | Promise<void>
 }>()
 
 const emit = defineEmits<{
 	close: []
 }>()
 
-function handleConfirm() {
-	props.onConfirm?.()
+async function handleConfirm() {
+	await props.onConfirm?.()
 	emit('close')
 }
 </script>

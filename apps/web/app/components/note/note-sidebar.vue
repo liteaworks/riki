@@ -112,9 +112,6 @@ function openDeleteView(id: string) {
 	})
 }
 
-function openSaveAsView() {
-	viewFormModal.open({ view: null, filter: { ...useNoteStore().activeFilter } })
-}
 function spaceActions(space: SpaceListItem): DropdownMenuItem[][] {
 	return [
 		[

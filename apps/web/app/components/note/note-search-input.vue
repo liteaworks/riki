@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
-import { noteVisibility, noteVisibilityValues } from '#shared/types/note'
-import type { NoteVisibility } from '#shared/types/note'
+import { noteVisibilityValues } from '#shared/types/note'
+import { noteVisibilityMeta } from '~/utils/note-visibility'
 
 const { t } = useI18n()
 const appConfig = useAppConfig()
@@ -9,16 +9,6 @@ const noteStore = useNoteStore()
 const tagStore = useTagStore()
 
 const expanded = ref(false)
-
-const filterIcons: Record<NoteVisibility, string> = {
-	[noteVisibility.private]: appConfig.ui.icons.lock,
-	[noteVisibility.protected]: appConfig.ui.icons.user,
-	[noteVisibility.public]: appConfig.ui.icons.globe,
-}
-
-function visibilityLabel(value: NoteVisibility) {
-	return t(`note.visibility${value[0]!.toUpperCase()}${value.slice(1)}`)
-}
 
 const activeCount = computed(
 	() =>
@@ -36,8 +26,8 @@ const filterItems = computed<DropdownMenuItem[][]>(() => [
 			children: [
 				noteVisibilityValues.map((value) => ({
 					type: 'checkbox' as const,
-					label: visibilityLabel(value),
-					icon: filterIcons[value],
+					label: t(noteVisibilityMeta[value].label),
+					icon: appConfig.ui.icons[noteVisibilityMeta[value].icon],
 					checked: noteStore.visibilityFilter.includes(value),
 					onUpdateChecked: () => {
 						noteStore.visibilityFilter = noteStore.visibilityFilter.includes(value)

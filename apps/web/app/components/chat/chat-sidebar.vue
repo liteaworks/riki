@@ -1,6 +1,4 @@
-<script setup lang="ts">
-const appConfig = useAppConfig()
-</script>
+<script setup lang="ts"></script>
 
 <template>
 	<USidebar

@@ -3,6 +3,7 @@ import type { View } from '#shared/types/view'
 import type { ViewFilter } from '#shared/types/view'
 import { noteVisibility, noteVisibilityValues } from '#shared/types/note'
 import type { NoteVisibility } from '#shared/types/note'
+import { noteVisibilityMeta } from '~/utils/note-visibility'
 
 const props = defineProps<{
 	view?: View | null
@@ -46,7 +47,7 @@ watch(
 )
 
 function visibilityLabel(value: NoteVisibility) {
-	return t(`note.visibility${value[0]!.toUpperCase()}${value.slice(1)}`)
+	return t(noteVisibilityMeta[value].label)
 }
 
 function toggleVisibility(value: NoteVisibility) {
