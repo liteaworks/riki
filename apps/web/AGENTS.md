@@ -57,6 +57,10 @@
 - Merging a fetched page into a reactive list is O(n) in the size of both, not O(n·m): build a `Map` by id once instead of scanning per row.
 - Replace a reactive collection in one assignment after mutating a copy, rather than pushing row by row.
 - Do not re-fetch a full page on a timer; every read costs against D1's daily budget.
+- Content search is `LIKE '%…%'` — a full scan that cannot use an index and is the first D1 read-cost driver once notes grow. The upgrade path is FTS5.
+- The client keyword pre-filter walks every loaded note per keystroke. It is bounded by what infinite scroll has fetched, not by the whole table; the debounced server query stays authoritative.
+- The tag filter menu only offers the first `limit` tags (`listTagsQuerySchema` caps at 50). Dynamic search in that submenu is the fix once users exceed it.
+- The editor's image/audio/location actions are placeholders with no `onSelect`; they must stay that way until implemented, or be removed — never wire them to a no-op.
 
 ## i18n
 

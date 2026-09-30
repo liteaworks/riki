@@ -42,6 +42,7 @@ const MAX_ATTEMPTS = 8
 const RETRY_BASE_MS = 2000
 const RETRY_MAX_MS = 60_000
 const PAGE_SIZE = 20
+const OUTBOX_CONCURRENCY = 4
 
 function statusOf(error: unknown) {
 	if (error && typeof error === 'object' && 'statusCode' in error) {
@@ -215,41 +216,62 @@ export const useNoteStore = defineStore('note', () => {
 
 		syncing.value = true
 		try {
-			for (const row of due) {
-				try {
-					await push(row)
-					settle(row.noteId)
-				} catch (error) {
-					const status = statusOf(error)
+			let rejected: unknown
+			for (let start = 0; start < due.length; start += OUTBOX_CONCURRENCY) {
+				const batch = due.slice(start, start + OUTBOX_CONCURRENCY)
+				const results = await Promise.allSettled(
+					batch.map(async (row) => {
+						try {
+							await push(row)
+							return { row, ok: true as const }
+						} catch (error) {
+							return { row, ok: false as const, error }
+						}
+					}),
+				)
+				for (const result of results) {
+					if (result.status !== 'fulfilled') continue
+					const outcome = result.value
+					if (outcome.ok) {
+						settle(outcome.row.noteId)
+						continue
+					}
+					const status = statusOf(outcome.error)
 					if (status >= 400 && status < 500) {
 						outbox.value = outbox.value.map((item) =>
-							item.noteId === row.noteId
+							item.noteId === outcome.row.noteId
 								? {
 										...item,
 										state: 'failed' as const,
 										attempts: item.attempts + 1,
 										nextRetryAt: Date.now() + RETRY_MAX_MS,
-										lastError: error instanceof Error ? error.message : String(error),
+										lastError:
+											outcome.error instanceof Error
+												? outcome.error.message
+												: String(outcome.error),
 										lastStatus: status,
 									}
 								: item,
 						)
-						throw error
+						rejected ??= outcome.error
+						continue
 					}
-					const attempts = row.attempts + 1
+					const attempts = outcome.row.attempts + 1
 					outbox.value = outbox.value.map((item) =>
-						item.noteId === row.noteId
+						item.noteId === outcome.row.noteId
 							? {
 									...item,
 									state: attempts >= MAX_ATTEMPTS ? ('failed' as const) : ('pending' as const),
 									attempts,
 									nextRetryAt: Date.now() + backoffDelay(attempts),
-									lastError: error instanceof Error ? error.message : String(error),
+									lastError:
+										outcome.error instanceof Error ? outcome.error.message : String(outcome.error),
 								}
 							: item,
 					)
 				}
 			}
+			if (rejected) throw rejected
 		} finally {
 			syncing.value = false
 		}
