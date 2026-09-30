@@ -64,10 +64,6 @@ function buildFilter(): ViewFilter {
 	}
 }
 
-function onOpenChange(value: boolean) {
-	if (!value) open.value = false
-}
-
 async function handleConfirm() {
 	const value = name.value.trim()
 	if (!value || saving.value) return
@@ -94,12 +90,11 @@ async function handleConfirm() {
 
 <template>
 	<DialogModal
-		:open="true"
+		v-model:open="open"
 		:title="title"
 		:description="description"
 		:icon="appConfig.ui.icons.file"
 		:on-confirm="handleConfirm"
-		@update:open="onOpenChange"
 		@close="open = false"
 	>
 		<div class="flex flex-col gap-3">

@@ -180,6 +180,10 @@ function tagActions(tagId: string): DropdownMenuItem[][] {
 	return [[pinAction(sidebarKind.tag, tagId)]]
 }
 
+function pinnedActions(entry: { kind: SidebarKind; id: string }): DropdownMenuItem[][] {
+	return [[pinAction(entry.kind, entry.id)]]
+}
+
 function selectTarget(kind: SidebarTarget['kind'], id: string) {
 	viewStore.select({ kind, id })
 }
@@ -213,6 +217,7 @@ const pinnedItems = computed<NavigationMenuItem[]>(() =>
 					? appConfig.ui.icons.hash
 					: appConfig.ui.icons.file,
 		active: isActive(entry.kind, entry.id),
+		slot: `pin-${entry.entry.id}`,
 		'data-item-kind': entry.kind,
 		'data-item-id': entry.id,
 		onSelect: () => selectTarget(entry.kind, entry.id),
@@ -222,9 +227,7 @@ const pinnedItems = computed<NavigationMenuItem[]>(() =>
 const items = computed<NavigationMenuItem[][]>(() => {
 	const rows: NavigationMenuItem[][] = []
 
-	if (pinnedItems.value.length) {
-		rows.push([{ label: t('view.pinned'), type: 'label', slot: 'pinned' }, ...pinnedItems.value])
-	}
+	rows.push([...builtinItems.value, ...pinnedItems.value])
 
 	rows.push([
 		{ label: t('view.label'), type: 'label', slot: 'views' },
@@ -279,6 +282,32 @@ const items = computed<NavigationMenuItem[][]>(() => {
 					:items="items"
 					:ui="{ link: 'overflow-hidden has-data-[state=open]:before:bg-elevated/50' }"
 				>
+					<template
+						v-for="entry in pinnedTargets"
+						:key="entry.entry.id"
+						#[`pin-${entry.entry.id}-trailing`]
+					>
+						<div
+							class="pointer-events-none -my-0.5 -mr-1.5 flex opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-data-[state=collapsed]/sidebar:hidden has-data-[state=open]:opacity-100"
+						>
+							<UDropdownMenu
+								:items="pinnedActions(entry)"
+								:content="{ align: 'start' }"
+								:modal="false"
+							>
+								<UButton
+									as="div"
+									:icon="appConfig.ui.icons.ellipsis"
+									color="neutral"
+									variant="ghost"
+									size="xs"
+									class="text-muted hover:bg-accented/50 hover:text-highlighted data-[state=open]:bg-accented/50"
+									@click.stop
+								/>
+							</UDropdownMenu>
+						</div>
+					</template>
+
 					<template #views-trailing>
 						<div
 							class="pointer-events-none -my-0.5 -mr-1.5 flex opacity-0 transition-opacity group-hover/sidebar:pointer-events-auto group-hover/sidebar:opacity-100 group-data-[state=collapsed]/sidebar:hidden"

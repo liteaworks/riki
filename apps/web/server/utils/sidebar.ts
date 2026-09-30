@@ -3,6 +3,7 @@ import { sidebar } from '#server/db/schemas'
 import { asc, eq, sql } from 'drizzle-orm'
 
 async function writePositions(userId: string, order: string[]) {
+	if (!order.length) return
 	await db
 		.update(sidebar)
 		.set({
