@@ -35,6 +35,7 @@ interface OutboxRow {
 	attempts: number
 	nextRetryAt: number
 	lastError?: string
+	lastStatus?: number
 }
 
 const MAX_ATTEMPTS = 8
@@ -213,36 +214,45 @@ export const useNoteStore = defineStore('note', () => {
 		if (!due.length) return
 
 		syncing.value = true
-		for (const row of due) {
-			try {
-				await push(row)
-				settle(row.noteId)
-			} catch (error) {
-				const status = statusOf(error)
-				if (status >= 400 && status < 500) {
-					// A create the server rejected never existed there, and a 404 means
-					// the note is gone remotely — keeping either would let it win LWW forever.
-					if (status === 404 || row.kind === 'create') {
-						notes.value = notes.value.filter((note) => note.id !== row.noteId)
-					}
+		try {
+			for (const row of due) {
+				try {
+					await push(row)
 					settle(row.noteId)
-					throw error
+				} catch (error) {
+					const status = statusOf(error)
+					if (status >= 400 && status < 500) {
+						outbox.value = outbox.value.map((item) =>
+							item.noteId === row.noteId
+								? {
+										...item,
+										state: 'failed' as const,
+										attempts: item.attempts + 1,
+										nextRetryAt: Date.now() + RETRY_MAX_MS,
+										lastError: error instanceof Error ? error.message : String(error),
+										lastStatus: status,
+									}
+								: item,
+						)
+						throw error
+					}
+					const attempts = row.attempts + 1
+					outbox.value = outbox.value.map((item) =>
+						item.noteId === row.noteId
+							? {
+									...item,
+									state: attempts >= MAX_ATTEMPTS ? ('failed' as const) : ('pending' as const),
+									attempts,
+									nextRetryAt: Date.now() + backoffDelay(attempts),
+									lastError: error instanceof Error ? error.message : String(error),
+								}
+							: item,
+					)
 				}
-				const attempts = row.attempts + 1
-				outbox.value = outbox.value.map((item) =>
-					item.noteId === row.noteId
-						? {
-								...item,
-								state: attempts >= MAX_ATTEMPTS ? ('failed' as const) : ('pending' as const),
-								attempts,
-								nextRetryAt: Date.now() + backoffDelay(attempts),
-								lastError: error instanceof Error ? error.message : String(error),
-							}
-						: item,
-				)
 			}
+		} finally {
+			syncing.value = false
 		}
-		syncing.value = false
 	}
 
 	async function loadMore() {
@@ -298,9 +308,21 @@ export const useNoteStore = defineStore('note', () => {
 	)
 
 	async function retryNote(id: string) {
-		if (!outbox.value.some((row) => row.noteId === id)) return
-		outbox.value = outbox.value.map((row) =>
-			row.noteId === id ? { ...row, state: 'pending' as const, attempts: 0, nextRetryAt: 0 } : row,
+		const row = outbox.value.find((item) => item.noteId === id)
+		if (!row) return
+		const recreate = row.kind === 'update' && row.lastStatus === 404
+		outbox.value = outbox.value.map((item) =>
+			item.noteId === id
+				? {
+						...item,
+						kind: recreate ? ('create' as const) : item.kind,
+						state: 'pending' as const,
+						attempts: 0,
+						nextRetryAt: 0,
+						lastError: undefined,
+						lastStatus: undefined,
+					}
+				: item,
 		)
 		await flush().catch(() => {})
 	}

@@ -28,21 +28,12 @@ function unwrap(stored: string): string {
 }
 
 export const useDraftStore = defineStore('draft', () => {
-	const authClient = useAuth()
-	const session = authClient.useSession()
-
 	const drafts = skipHydrate(useLocalStorage<Record<string, string>>(localKeys.drafts, {}))
-	const lastUserId = skipHydrate(useLocalStorage<string | null>(localKeys.userId, null))
 
 	const timers = new Map<string, ReturnType<typeof setTimeout>>()
 
-	const userId = computed(() => session.value.data?.user?.id ?? lastUserId.value)
-	watch(userId, (id) => {
-		if (id) lastUserId.value = id
-	})
-
 	function scopeFor(noteId?: string | null) {
-		return `${userId.value ?? 'anonymous'}:${noteId ?? 'new'}`
+		return noteId ?? 'new'
 	}
 
 	function load(scope: string) {
