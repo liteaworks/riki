@@ -16,15 +16,14 @@ interface DraftEntry {
 function unwrap(stored: string): string {
 	try {
 		const parsed = JSON.parse(stored) as Partial<DraftEntry>
-		if (
-			parsed.kind === DRAFT_KIND &&
+		return parsed.kind === DRAFT_KIND &&
 			parsed.version === DRAFT_VERSION &&
 			typeof parsed.content === 'string'
-		) {
-			return parsed.content
-		}
-	} catch {}
-	return stored
+			? parsed.content
+			: stored
+	} catch {
+		return stored
+	}
 }
 
 export const useDraftStore = defineStore('draft', () => {

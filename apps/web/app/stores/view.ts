@@ -74,13 +74,11 @@ export const useViewStore = defineStore('view', () => {
 	async function load() {
 		if (import.meta.server || loaded.value || pending.value) return
 		pending.value = true
-		try {
-			await refresh()
-			loaded.value = true
-		} catch {
-		} finally {
-			pending.value = false
-		}
+		loaded.value = await refresh().then(
+			() => true,
+			() => false,
+		)
+		pending.value = false
 	}
 
 	function select(next: SidebarTarget | null) {

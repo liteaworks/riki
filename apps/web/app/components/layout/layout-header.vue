@@ -28,15 +28,10 @@ async function handleWindowDrag(event: MouseEvent) {
 
 	if (event.button !== 0) return
 
-	try {
-		const windows = await useTauriWindowGetAllWindows()
-
-		windows.forEach((window) => {
-			if (window.label === 'main') window.startDragging()
-		})
-	} catch (error) {
-		console.error(error)
-	}
+	const windows = await useTauriWindowGetAllWindows().catch(() => [])
+	windows.forEach((window) => {
+		if (window.label === 'main') window.startDragging()
+	})
 }
 </script>
 

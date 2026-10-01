@@ -215,11 +215,11 @@ export const useNoteStore = defineStore('note', () => {
 		if (!due.length) return
 
 		syncing.value = true
+		let rejected: unknown
 		try {
-			let rejected: unknown
 			for (let start = 0; start < due.length; start += OUTBOX_CONCURRENCY) {
 				const batch = due.slice(start, start + OUTBOX_CONCURRENCY)
-				const results = await Promise.allSettled(
+				const results = await Promise.all(
 					batch.map(async (row) => {
 						try {
 							await push(row)
@@ -229,9 +229,7 @@ export const useNoteStore = defineStore('note', () => {
 						}
 					}),
 				)
-				for (const result of results) {
-					if (result.status !== 'fulfilled') continue
-					const outcome = result.value
+				for (const outcome of results) {
 					if (outcome.ok) {
 						settle(outcome.row.noteId)
 						continue
@@ -271,10 +269,10 @@ export const useNoteStore = defineStore('note', () => {
 					)
 				}
 			}
-			if (rejected) throw rejected
 		} finally {
 			syncing.value = false
 		}
+		return rejected
 	}
 
 	async function loadMore() {
@@ -283,26 +281,23 @@ export const useNoteStore = defineStore('note', () => {
 		const filter = activeFilter.value
 		const spaceId = filter.spaceId === undefined ? undefined : (filter.spaceId ?? null)
 		pending.value = true
-		try {
-			const data = await $fetch<ListNotesResponse>('/api/notes', {
-				query: {
-					limit: PAGE_SIZE,
-					...(nextCursor.value ? { cursor: nextCursor.value } : {}),
-					...(spaceId === null ? { noSpace: true } : spaceId ? { spaceId } : {}),
-					...(filter.tagIds?.length ? { tagIds: filter.tagIds } : {}),
-					...(filter.visibility?.length ? { visibility: filter.visibility } : {}),
-					...(filter.pinnedOnly ? { pinnedOnly: true } : {}),
-					...(filter.q ? { q: filter.q } : {}),
-				},
-			})
+		const data = await $fetch<ListNotesResponse>('/api/notes', {
+			query: {
+				limit: PAGE_SIZE,
+				...(nextCursor.value ? { cursor: nextCursor.value } : {}),
+				...(spaceId === null ? { noSpace: true } : spaceId ? { spaceId } : {}),
+				...(filter.tagIds?.length ? { tagIds: filter.tagIds } : {}),
+				...(filter.visibility?.length ? { visibility: filter.visibility } : {}),
+				...(filter.pinnedOnly ? { pinnedOnly: true } : {}),
+				...(filter.q ? { q: filter.q } : {}),
+			},
+		}).catch(() => null)
+		if (data) {
 			mergeIncoming(data.items)
 			nextCursor.value = data.nextCursor
 			if (data.nextCursor === null) paginationDone.value = true
-		} catch {
-			// keep the cache
-		} finally {
-			pending.value = false
 		}
+		pending.value = false
 	}
 
 	watch(
@@ -346,7 +341,7 @@ export const useNoteStore = defineStore('note', () => {
 					}
 				: item,
 		)
-		await flush().catch(() => {})
+		await flush()
 	}
 
 	async function create(input: CreateNoteInput) {
@@ -368,7 +363,8 @@ export const useNoteStore = defineStore('note', () => {
 		}
 		notes.value = [note, ...notes.value]
 		enqueueFor(note, 'create', input.tagNames)
-		await flush()
+		const rejected = await flush()
+		if (rejected) throw rejected
 		return note
 	}
 
@@ -389,7 +385,8 @@ export const useNoteStore = defineStore('note', () => {
 		notes.value[index] = next
 
 		enqueueFor(next, 'update', body.tagNames)
-		await flush()
+		const rejected = await flush()
+		if (rejected) throw rejected
 		return next
 	}
 
@@ -403,7 +400,7 @@ export const useNoteStore = defineStore('note', () => {
 		if (!previous) return
 		notes.value.splice(index, 1)
 		enqueueFor({ ...previous, status: noteStatus.archived, updatedAt: new Date() }, 'update')
-		void flush().catch(() => {})
+		void flush()
 	}
 
 	function isPending(id: string) {
@@ -413,7 +410,7 @@ export const useNoteStore = defineStore('note', () => {
 	function start() {
 		if (import.meta.server || started) return
 		started = true
-		useEventListener(window, 'online', () => void flush().catch(() => {}))
+		useEventListener(window, 'online', () => void flush())
 	}
 
 	return {

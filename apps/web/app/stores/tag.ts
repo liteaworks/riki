@@ -9,14 +9,14 @@ export const useTagStore = defineStore('tag', () => {
 		if (pending.value) return
 		if (loaded.value && !options?.force) return
 		pending.value = true
-		try {
-			tags.value = await $fetch<TagListItem[]>('/api/tags', { query: { limit: 50 } })
+		const rows = await $fetch<TagListItem[]>('/api/tags', { query: { limit: 50 } }).catch(
+			() => null,
+		)
+		if (rows) {
+			tags.value = rows
 			loaded.value = true
-		} catch {
-			// A preload must not break the page; `loaded` stays false to retry.
-		} finally {
-			pending.value = false
 		}
+		pending.value = false
 	}
 
 	async function search(query: string) {
