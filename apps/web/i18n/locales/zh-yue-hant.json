@@ -20,7 +20,8 @@
 	},
 	"header": {
 		"backToApp": "返回應用程式",
-		"openAppMenu": "打開應用程式選單"
+		"openAppMenu": "打開應用程式選單",
+		"openSidebar": "打開側邊欄"
 	},
 	"auth": {
 		"signIn": "登入",

@@ -78,9 +78,28 @@ export default defineEventHandler(async (event) => {
 		.orderBy(desc(notes.createdAt), desc(notes.id))
 		.limit(query.limit + 1)
 
-	const items = rows.slice(0, query.limit).map((row) => ({
+	const page = rows.slice(0, query.limit)
+	const tagRows = page.length
+		? await db
+				.select({ noteId: noteTags.noteId, tagId: noteTags.tagId })
+				.from(noteTags)
+				.where(
+					inArray(
+						noteTags.noteId,
+						page.map((row) => row.id),
+					),
+				)
+		: []
+	const tagIdsByNote = new Map<string, string[]>()
+	for (const row of tagRows) {
+		const list = tagIdsByNote.get(row.noteId)
+		if (list) list.push(row.tagId)
+		else tagIdsByNote.set(row.noteId, [row.tagId])
+	}
+	const items = page.map((row) => ({
 		...row,
 		spaceName: row.userId === viewerId ? row.spaceName : null,
+		tagIds: tagIdsByNote.get(row.id) ?? [],
 	}))
 	const last = items[items.length - 1]
 	return {

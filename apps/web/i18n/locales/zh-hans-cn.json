@@ -20,7 +20,8 @@
 	},
 	"header": {
 		"backToApp": "返回应用",
-		"openAppMenu": "打开应用菜单"
+		"openAppMenu": "打开应用菜单",
+		"openSidebar": "打开侧边栏"
 	},
 	"auth": {
 		"signIn": "登录",

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const appConfig = useAppConfig()
 
+const open = defineModel<boolean>('open', { default: true })
+
 withDefaults(
 	defineProps<{
 		collapsible?: 'offcanvas' | 'icon' | 'none'
@@ -12,7 +14,7 @@ withDefaults(
 </script>
 
 <template>
-	<USidebar rail :collapsible="collapsible">
+	<USidebar rail v-model:open="open" :collapsible="collapsible">
 		<template #title v-if="!isTauri">
 			<UButton
 				v-if="$route.path !== '/'"

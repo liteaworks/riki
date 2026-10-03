@@ -1,7 +1,7 @@
 import { db } from '#server/utils/db'
 import { notes, spaces } from '#server/db/schemas'
 import { createNoteBodySchema } from '#shared/types/note'
-import { resolveTagIdsForNames, tagLinkInserts } from '#server/utils/note-tags'
+import { resolveTagIdsForNames, tagIdsForNote, tagLinkInserts } from '#server/utils/note-tags'
 import { requireUser } from '#server/utils/session'
 import { readBodyZod } from '#server/utils/validation'
 import { newId } from '#shared/utils/id'
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
 			.from(notes)
 			.where(and(eq(notes.id, body.id), eq(notes.userId, user.id)))
 			.limit(1)
-		if (existing) return existing
+		if (existing) return { ...existing, tagIds: await tagIdsForNote(body.id) }
 		const [foreign] = await db
 			.select({ id: notes.id })
 			.from(notes)
@@ -57,5 +57,5 @@ export default defineEventHandler(async (event) => {
 
 	setResponseStatus(event, 201)
 	setResponseHeader(event, 'Location', `/api/notes/${noteId}`)
-	return noteRows[0]
+	return { ...noteRows[0], tagIds }
 })

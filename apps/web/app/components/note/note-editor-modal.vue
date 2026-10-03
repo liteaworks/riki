@@ -16,6 +16,7 @@ const toast = useToast()
 const appConfig = useAppConfig()
 const noteStore = useNoteStore()
 const draftStore = useDraftStore()
+const viewStore = useViewStore()
 
 const content = ref('')
 const spaceId = ref<string | null>(null)
@@ -30,7 +31,7 @@ watch(
 	(isOpen) => {
 		if (!isOpen) return
 		content.value = draftStore.load(draftScope.value) || baseline.value
-		spaceId.value = props.note?.spaceId ?? null
+		spaceId.value = props.note ? props.note.spaceId : (viewStore.baseFilter.spaceId ?? null)
 		visibility.value = props.note?.visibility ?? noteVisibility.private
 	},
 	{ immediate: true },

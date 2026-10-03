@@ -20,7 +20,8 @@
 	},
 	"header": {
 		"backToApp": "Back to app",
-		"openAppMenu": "Open app menu"
+		"openAppMenu": "Open app menu",
+		"openSidebar": "Open sidebar"
 	},
 	"auth": {
 		"signIn": "Sign in",

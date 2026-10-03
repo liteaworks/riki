@@ -31,6 +31,7 @@ const confirmDialog = overlay.create(LazyDialogModal)
 const signedIn = computed(() => Boolean(session.value.data?.user?.id))
 
 const contextItem = ref<{ kind: SidebarKind; id: string } | null>(null)
+const open = defineModel<boolean>('open', { default: true })
 const contextPinnedId = computed(() =>
 	contextItem.value
 		? (viewStore.pinned.find(
@@ -181,10 +182,6 @@ function pinnedActions(entry: { kind: SidebarKind; id: string }): DropdownMenuIt
 	return [[pinAction(entry.kind, entry.id)]]
 }
 
-function selectTarget(kind: SidebarTarget['kind'], id: string) {
-	viewStore.select({ kind, id })
-}
-
 const builtinItems = computed<NavigationMenuItem[]>(() => [
 	{
 		label: t('note.library'),
@@ -192,7 +189,7 @@ const builtinItems = computed<NavigationMenuItem[]>(() => [
 		active: isActive('library', 'library'),
 		'data-item-kind': 'library',
 		'data-item-id': 'library',
-		onSelect: () => selectTarget('library', 'library'),
+		to: '/',
 	},
 	{
 		label: t('note.inbox'),
@@ -200,7 +197,7 @@ const builtinItems = computed<NavigationMenuItem[]>(() => [
 		active: isActive('inbox', 'inbox'),
 		'data-item-kind': 'inbox',
 		'data-item-id': 'inbox',
-		onSelect: () => selectTarget('inbox', 'inbox'),
+		to: '/inbox',
 	},
 ])
 
@@ -217,7 +214,7 @@ const pinnedItems = computed<NavigationMenuItem[]>(() =>
 		slot: `pin-${entry.entry.id}`,
 		'data-item-kind': entry.kind,
 		'data-item-id': entry.id,
-		onSelect: () => selectTarget(entry.kind, entry.id),
+		to: { path: '/', query: { [entry.kind]: entry.id } },
 	})),
 )
 
@@ -235,7 +232,7 @@ const items = computed<NavigationMenuItem[][]>(() => {
 			slot: `view-${view.id}`,
 			'data-item-kind': sidebarKind.view,
 			'data-item-id': view.id,
-			onSelect: () => selectTarget(sidebarKind.view, view.id),
+			to: { path: '/', query: { view: view.id } },
 		})),
 	])
 
@@ -248,7 +245,7 @@ const items = computed<NavigationMenuItem[][]>(() => {
 			slot: `space-${space.id}`,
 			'data-item-kind': sidebarKind.space,
 			'data-item-id': space.id,
-			onSelect: () => selectTarget(sidebarKind.space, space.id),
+			to: { path: '/', query: { space: space.id } },
 		})),
 	])
 
@@ -261,7 +258,7 @@ const items = computed<NavigationMenuItem[][]>(() => {
 				active: isActive(sidebarKind.tag, tag.id),
 				'data-item-kind': sidebarKind.tag,
 				'data-item-id': tag.id,
-				onSelect: () => selectTarget(sidebarKind.tag, tag.id),
+				to: { path: '/', query: { tag: tag.id } },
 			})),
 		])
 	}
@@ -271,7 +268,7 @@ const items = computed<NavigationMenuItem[][]>(() => {
 </script>
 
 <template>
-	<LayoutSidebar>
+	<LayoutSidebar v-model:open="open">
 		<UContextMenu :items="targetActions" :disabled="!contextPinnedId">
 			<div @contextmenu.capture="onContextMenu">
 				<UNavigationMenu

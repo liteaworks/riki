@@ -51,3 +51,11 @@ export async function resolveTagIdsForNames(userId: string, tagNames: string[]):
 export function tagLinkInserts(noteId: string, tagIds: string[]) {
 	return tagIds.map((tagId) => db.insert(noteTags).values({ noteId, tagId }).onConflictDoNothing())
 }
+
+export async function tagIdsForNote(noteId: string): Promise<string[]> {
+	const rows = await db
+		.select({ tagId: noteTags.tagId })
+		.from(noteTags)
+		.where(eq(noteTags.noteId, noteId))
+	return rows.map((row) => row.tagId)
+}

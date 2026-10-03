@@ -121,6 +121,9 @@ export type NoteListItem = Note & {
 	spaceName: string | null
 	authorName: string | null
 	authorImage: string | null
+	tagIds: string[]
 }
+
+export type NoteWithTags = Note & { tagIds: string[] }
 
 export type ListNotesResponse = { items: NoteListItem[]; nextCursor: string | null }

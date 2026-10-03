@@ -5,9 +5,9 @@ import { toEpoch } from '../utils/time'
 import type {
 	CreateNoteInput,
 	ListNotesResponse,
-	Note,
 	NoteListItem,
 	NoteStatus,
+	NoteWithTags,
 	UpdateNoteBody,
 } from '#shared/types/note'
 import type { ViewFilter } from '#shared/types/view'
@@ -61,6 +61,7 @@ export const useNoteStore = defineStore('note', () => {
 	const authClient = useAuth()
 	const session = authClient.useSession()
 	const spaceStore = useSpaceStore()
+	const tagStore = useTagStore()
 	const online = useOnline()
 
 	const viewStore = useViewStore()
@@ -87,11 +88,16 @@ export const useNoteStore = defineStore('note', () => {
 
 	const visibleNotes = computed(() => {
 		const q = keyword.value.trim().toLowerCase()
+		const scope = activeFilter.value
 		return notes.value.filter((note) => {
 			if (q && !note.content.toLowerCase().includes(q)) return false
-			if (visibilityFilter.value.length && !visibilityFilter.value.includes(note.visibility))
-				return false
-			if (pinnedOnly.value && note.status !== noteStatus.pinned) return false
+			if (scope.spaceId !== undefined && note.spaceId !== scope.spaceId) return false
+			if (scope.tagIds?.length) {
+				const tags = note.tagIds ?? []
+				if (!scope.tagIds.every((id) => tags.includes(id))) return false
+			}
+			if (scope.visibility?.length && !scope.visibility.includes(note.visibility)) return false
+			if (scope.pinnedOnly && note.status !== noteStatus.pinned) return false
 			return true
 		})
 	})
@@ -129,6 +135,14 @@ export const useNoteStore = defineStore('note', () => {
 		return spaceStore.spaces.find((space) => space.id === spaceId)?.name ?? null
 	}
 
+	function resolvedTagIds(tagNames?: string[]): string[] {
+		if (!tagNames?.length) return []
+		const byName = new Map(tagStore.tags.map((tag) => [tag.name.toLowerCase(), tag.id]))
+		return tagNames
+			.map((name) => byName.get(name.toLowerCase()))
+			.filter((id): id is string => id !== undefined)
+	}
+
 	function mergeIncoming(incoming: NoteListItem[]) {
 		if (!incoming.length) return
 		const byId = new Map(notes.value.map((note) => [note.id, note]))
@@ -136,7 +150,7 @@ export const useNoteStore = defineStore('note', () => {
 		for (const note of incoming) {
 			if (note.status === noteStatus.archived) continue
 			const local = byId.get(note.id)
-			if (local && toEpoch(local.updatedAt) >= toEpoch(note.updatedAt)) continue
+			if (local && toEpoch(local.updatedAt) > toEpoch(note.updatedAt)) continue
 			byId.set(note.id, note)
 			changed = true
 		}
@@ -193,10 +207,13 @@ export const useNoteStore = defineStore('note', () => {
 			updatedAt: row.updatedAt,
 		}
 		if (row.kind === 'create') {
-			await $fetch<Note>('/api/notes', { method: 'POST', body: { id: row.noteId, ...body } })
+			await $fetch<NoteWithTags>('/api/notes', {
+				method: 'POST',
+				body: { id: row.noteId, ...body },
+			})
 			return
 		}
-		const winner = await $fetch<Note>(`/api/notes/${row.noteId}`, { method: 'PATCH', body })
+		const winner = await $fetch<NoteWithTags>(`/api/notes/${row.noteId}`, { method: 'PATCH', body })
 		const author = session.value.data?.user
 		mergeIncoming([
 			{
@@ -356,6 +373,7 @@ export const useNoteStore = defineStore('note', () => {
 			spaceName: spaceNameOf(spaceId),
 			authorName: author?.name ?? null,
 			authorImage: author?.image ?? null,
+			tagIds: resolvedTagIds(input.tagNames),
 			visibility: input.visibility ?? noteVisibility.private,
 			status: input.status ?? noteStatus.normal,
 			createdAt: now,
@@ -378,6 +396,7 @@ export const useNoteStore = defineStore('note', () => {
 			content: body.content ?? previous.content,
 			spaceId: body.spaceId === undefined ? previous.spaceId : body.spaceId,
 			spaceName: body.spaceId === undefined ? previous.spaceName : spaceNameOf(body.spaceId),
+			tagIds: body.tagNames ? resolvedTagIds(body.tagNames) : previous.tagIds,
 			visibility: body.visibility ?? previous.visibility,
 			status: body.status ?? previous.status,
 			updatedAt: new Date(),

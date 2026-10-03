@@ -1,7 +1,7 @@
 import { db } from '#server/utils/db'
 import { noteTags, notes, spaces } from '#server/db/schemas'
 import { updateNoteBodySchema } from '#shared/types/note'
-import { resolveTagIdsForNames, tagLinkInserts } from '#server/utils/note-tags'
+import { resolveTagIdsForNames, tagIdsForNote, tagLinkInserts } from '#server/utils/note-tags'
 import { requireUser } from '#server/utils/session'
 import { readBodyZod } from '#server/utils/validation'
 import { and, eq } from 'drizzle-orm'
@@ -37,7 +37,9 @@ export default defineEventHandler(async (event) => {
 	// the winning row so the caller converges instead of retrying forever.
 	if (body.updatedAt !== undefined) {
 		const stamp = Math.min(body.updatedAt, Date.now())
-		if (stamp <= current.updatedAt.getTime()) return current
+		if (stamp <= current.updatedAt.getTime()) {
+			return { ...current, tagIds: await tagIdsForNote(id) }
+		}
 	}
 
 	const [updated] = await db
@@ -62,5 +64,5 @@ export default defineEventHandler(async (event) => {
 		])
 	}
 
-	return updated
+	return { ...updated, tagIds: await tagIdsForNote(id) }
 })
