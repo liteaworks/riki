@@ -88,12 +88,13 @@ export type UpdateNoteBody = z.output<typeof updateNoteBodySchema>
 
 const noteCursorSchema = z
 	.string()
-	.regex(/^\d+:[^:]+$/)
+	.regex(/^\d+:[^:]+:[01]$/)
 	.transform((value) => {
-		const separator = value.indexOf(':')
+		const [createdAt, id, pinned] = value.split(':')
 		return {
-			createdAt: new Date(Number(value.slice(0, separator))),
-			id: value.slice(separator + 1),
+			createdAt: new Date(Number(createdAt)),
+			id: id as string,
+			pinned: pinned === '1',
 		}
 	})
 	.refine((cursor) => !Number.isNaN(cursor.createdAt.getTime()))

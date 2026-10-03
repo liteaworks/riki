@@ -142,6 +142,7 @@ const absoluteHint = computed(() => {
 			</article>
 			<div class="flex items-center gap-2 pl-2 text-xs text-muted sm:py-1 sm:text-sm">
 				<div class="flex items-center gap-1 truncate">
+					<UIcon v-if="isPinned" :name="appConfig.ui.icons.pin" class="size-3.5 shrink-0" />
 					<UTooltip v-if="hasDraft" :text="$t('note.draft')">
 						<UIcon :name="appConfig.ui.icons.draft" class="size-3.5 shrink-0 text-warning" />
 					</UTooltip>

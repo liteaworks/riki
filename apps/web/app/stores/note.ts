@@ -57,6 +57,14 @@ function backoffDelay(attempts: number) {
 	return Math.round(exponential * (0.5 + Math.random() * 0.5))
 }
 
+function compareNotes(a: NoteListItem, b: NoteListItem) {
+	const pinned = Number(b.status === noteStatus.pinned) - Number(a.status === noteStatus.pinned)
+	if (pinned) return pinned
+	const byTime = toEpoch(b.createdAt) - toEpoch(a.createdAt)
+	if (byTime) return byTime
+	return a.id < b.id ? 1 : a.id > b.id ? -1 : 0
+}
+
 export const useNoteStore = defineStore('note', () => {
 	const authClient = useAuth()
 	const session = authClient.useSession()
@@ -89,17 +97,20 @@ export const useNoteStore = defineStore('note', () => {
 	const visibleNotes = computed(() => {
 		const q = keyword.value.trim().toLowerCase()
 		const scope = activeFilter.value
-		return notes.value.filter((note) => {
-			if (q && !note.content.toLowerCase().includes(q)) return false
-			if (scope.spaceId !== undefined && note.spaceId !== scope.spaceId) return false
-			if (scope.tagIds?.length) {
-				const tags = note.tagIds ?? []
-				if (!scope.tagIds.every((id) => tags.includes(id))) return false
-			}
-			if (scope.visibility?.length && !scope.visibility.includes(note.visibility)) return false
-			if (scope.pinnedOnly && note.status !== noteStatus.pinned) return false
-			return true
-		})
+		return notes.value
+			.filter((note) => {
+				if (note.status === noteStatus.archived) return false
+				if (q && !note.content.toLowerCase().includes(q)) return false
+				if (scope.spaceId !== undefined && note.spaceId !== scope.spaceId) return false
+				if (scope.tagIds?.length) {
+					const tags = note.tagIds ?? []
+					if (!scope.tagIds.every((id) => tags.includes(id))) return false
+				}
+				if (scope.visibility?.length && !scope.visibility.includes(note.visibility)) return false
+				if (scope.pinnedOnly && note.status !== noteStatus.pinned) return false
+				return true
+			})
+			.sort(compareNotes)
 	})
 
 	function resetFilter() {
@@ -155,7 +166,7 @@ export const useNoteStore = defineStore('note', () => {
 			changed = true
 		}
 		if (!changed) return
-		notes.value = [...byId.values()].sort((a, b) => toEpoch(b.createdAt) - toEpoch(a.createdAt))
+		notes.value = [...byId.values()].sort(compareNotes)
 	}
 
 	// A space rename never bumps the notes' updatedAt, so cached names would go

@@ -18,18 +18,26 @@ import {
 	sql,
 } from 'drizzle-orm'
 
-export function encodeNoteCursor(createdAt: Date, id: string): string {
-	return `${createdAt.getTime()}:${id}`
+export function encodeNoteCursor(createdAt: Date, id: string, pinned: boolean): string {
+	return `${createdAt.getTime()}:${id}:${pinned ? 1 : 0}`
 }
 
 export default defineEventHandler(async (event) => {
 	const query = await readQueryZod(event, listNotesQuerySchema)
 	const viewerId = (await getSessionUser(event))?.id ?? null
 
+	const pinnedFlag = sql<number>`case when ${notes.status} = ${noteStatus.pinned} then 1 else 0 end`
+
 	const cursorFilter = query.cursor
 		? or(
-				lt(notes.createdAt, query.cursor.createdAt),
-				and(eq(notes.createdAt, query.cursor.createdAt), lt(notes.id, query.cursor.id)),
+				lt(pinnedFlag, query.cursor.pinned ? 1 : 0),
+				and(
+					eq(pinnedFlag, query.cursor.pinned ? 1 : 0),
+					or(
+						lt(notes.createdAt, query.cursor.createdAt),
+						and(eq(notes.createdAt, query.cursor.createdAt), lt(notes.id, query.cursor.id)),
+					),
+				),
 			)
 		: undefined
 
@@ -75,7 +83,7 @@ export default defineEventHandler(async (event) => {
 					: undefined,
 			),
 		)
-		.orderBy(desc(notes.createdAt), desc(notes.id))
+		.orderBy(desc(pinnedFlag), desc(notes.createdAt), desc(notes.id))
 		.limit(query.limit + 1)
 
 	const page = rows.slice(0, query.limit)
@@ -105,6 +113,8 @@ export default defineEventHandler(async (event) => {
 	return {
 		items,
 		nextCursor:
-			rows.length > query.limit && last ? encodeNoteCursor(last.createdAt, last.id) : null,
+			rows.length > query.limit && last
+				? encodeNoteCursor(last.createdAt, last.id, last.status === noteStatus.pinned)
+				: null,
 	}
 })
