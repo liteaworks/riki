@@ -13,7 +13,11 @@ const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
 	['month', 12],
 ]
 
-export function formatRelativeTime(value: string | number | Date, locale: string): string {
+export function formatRelativeTime(
+	value: string | number | Date,
+	locale: string,
+	_timeZone?: string,
+): string {
 	const time = toEpoch(value)
 	if (Number.isNaN(time)) return ''
 	const formatter = new Intl.RelativeTimeFormat(resolveLocale(locale), { numeric: 'auto' })
@@ -25,11 +29,51 @@ export function formatRelativeTime(value: string | number | Date, locale: string
 	return formatter.format(delta, 'year')
 }
 
-export function formatAbsoluteTime(value: string | number | Date, locale: string): string {
+export function formatAbsoluteTime(
+	value: string | number | Date,
+	locale: string,
+	timeZone?: string,
+): string {
 	const time = new Date(value)
 	if (Number.isNaN(time.getTime())) return ''
 	return new Intl.DateTimeFormat(resolveLocale(locale), {
 		dateStyle: 'medium',
 		timeStyle: 'short',
+		timeZone,
 	}).format(time)
+}
+
+export function formatAbsoluteTimeLong(
+	value: string | number | Date,
+	locale: string,
+	timeZone?: string,
+): string {
+	const time = new Date(value)
+	if (Number.isNaN(time.getTime())) return ''
+	return new Intl.DateTimeFormat(resolveLocale(locale), {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		timeZoneName: 'short',
+		timeZone,
+	}).format(time)
+}
+
+export type TimeFormat = 'relative' | 'absolute'
+
+export function formatTime(
+	value: string | number | Date,
+	format: TimeFormat,
+	locale: string,
+	timeZone?: string,
+): string {
+	if (format === 'relative') return formatRelativeTime(value, locale, timeZone)
+	return formatAbsoluteTime(value, locale, timeZone)
+}
+
+export function resolveTimeZone(timeZone: string | undefined): string | undefined {
+	return timeZone && timeZone !== 'system' ? timeZone : undefined
 }

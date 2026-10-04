@@ -76,6 +76,9 @@ export const iconsTheme = {
 	globe: 'ph:globe-simple',
 	appearance: 'ph:palette',
 	colorMode: 'ph:circle-half',
+	language: 'ph:translate',
+	timeZone: 'ph:clock-user',
+	timeFormat: 'ph:clock-countdown',
 
 	// auth
 	user: 'ph:user-circle',

@@ -117,17 +117,43 @@ function onRetry() {
 }
 
 const { locale } = useI18n()
+const settingsStore = useSettingsStore()
+const { state: settings } = storeToRefs(settingsStore)
 
-const relativeTime = computed(() => formatRelativeTime(props.note.createdAt, locale.value))
+const noteTime = computed(() =>
+	formatTime(
+		props.note.createdAt,
+		settings.value.timeFormat,
+		locale.value,
+		resolveTimeZone(settings.value.timeZone),
+	),
+)
+
 const absoluteHint = computed(() => {
+	const timeZone = resolveTimeZone(settings.value.timeZone)
 	const createdAt = $t('note.createdAt', {
-		time: formatAbsoluteTime(props.note.createdAt, locale.value),
+		time: formatAbsoluteTime(props.note.createdAt, locale.value, timeZone),
 	})
 	const createdSecond = Math.floor(new Date(props.note.createdAt).getTime() / 1000)
 	const updatedSecond = Math.floor(new Date(props.note.updatedAt).getTime() / 1000)
 	if (updatedSecond === createdSecond) return createdAt
-	return `${createdAt}\n${$t('note.updatedAt', { time: formatAbsoluteTime(props.note.updatedAt, locale.value) })}`
+	return `${createdAt}\n${$t('note.updatedAt', { time: formatAbsoluteTime(props.note.updatedAt, locale.value, timeZone) })}`
 })
+
+const relativeHint = computed(() => {
+	const timeZone = resolveTimeZone(settings.value.timeZone)
+	const createdAt = $t('note.createdAt', {
+		time: formatRelativeTime(props.note.createdAt, locale.value, timeZone),
+	})
+	const createdSecond = Math.floor(new Date(props.note.createdAt).getTime() / 1000)
+	const updatedSecond = Math.floor(new Date(props.note.updatedAt).getTime() / 1000)
+	if (updatedSecond === createdSecond) return createdAt
+	return `${createdAt}\n${$t('note.updatedAt', { time: formatRelativeTime(props.note.updatedAt, locale.value, timeZone) })}`
+})
+
+const timeTooltip = computed(() =>
+	settings.value.timeFormat === 'relative' ? absoluteHint.value : relativeHint.value,
+)
 </script>
 
 <template>
@@ -156,8 +182,8 @@ const absoluteHint = computed(() => {
 							@click.stop="onRetry"
 						/>
 					</UTooltip>
-					<UTooltip :text="absoluteHint" :ui="{ content: 'whitespace-pre-line' }">
-						<span>{{ relativeTime }}</span>
+					<UTooltip :text="timeTooltip" :ui="{ content: 'whitespace-pre-line' }">
+						<span>{{ noteTime }}</span>
 					</UTooltip>
 				</div>
 				<div class="flex shrink-0 items-center gap-1">

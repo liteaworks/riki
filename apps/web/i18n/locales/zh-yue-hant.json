@@ -83,19 +83,20 @@
 	},
 	"settings": {
 		"label": "設定",
+		"followSystem": "跟系統",
 		"preferences": {
 			"label": "偏好設定",
 			"general": "一般",
 			"language": "語言",
-			"color": "色調",
-			"colorMode": {
-				"label": "主題色",
-				"light": "淺色",
-				"dark": "深色",
-				"system": "跟隨系統",
-				"switchToDark": "切換到深色模式",
-				"switchToLight": "切換到淺色模式"
-			}
+			"appearance": "外觀",
+			"colorMode": "主題色",
+			"colorModeLight": "淺色",
+			"colorModeDark": "深色",
+			"format": "格式",
+			"timeZone": "時區",
+			"timeFormat": "時間格式",
+			"timeFormatRelative": "相對時間",
+			"timeFormatAbsolute": "絕對時間"
 		}
 	},
 	"view": {

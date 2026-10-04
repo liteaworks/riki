@@ -83,17 +83,20 @@
 	},
 	"settings": {
 		"label": "Settings",
+		"followSystem": "Follow system",
 		"preferences": {
 			"label": "Preferences",
 			"general": "General",
 			"language": "Language",
-			"color": "Color",
-			"colorMode": {
-				"label": "Color Mode",
-				"light": "Light",
-				"dark": "Dark",
-				"system": "System"
-			}
+			"appearance": "Appearance",
+			"colorMode": "Color mode",
+			"colorModeLight": "Light",
+			"colorModeDark": "Dark",
+			"format": "Format",
+			"timeZone": "Time zone",
+			"timeFormat": "Time format",
+			"timeFormatRelative": "Relative",
+			"timeFormatAbsolute": "Absolute"
 		}
 	},
 	"view": {

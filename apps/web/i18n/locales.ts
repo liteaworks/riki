@@ -6,7 +6,7 @@ export const locales: LocaleObject[] = [
 	{
 		code: 'en',
 		file: 'en-us.json',
-		language: 'en',
+		language: 'en-US',
 		name: 'English',
 	},
 	{
@@ -24,7 +24,7 @@ export const locales: LocaleObject[] = [
 	{
 		code: 'yue',
 		file: 'zh-yue-hant.json',
-		language: 'yue',
+		language: 'yue-HK',
 		name: '廣東話',
 	},
 	// {
