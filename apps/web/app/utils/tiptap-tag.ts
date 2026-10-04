@@ -1,5 +1,5 @@
 import Mention from '@tiptap/extension-mention'
-import { mentionChipClass } from '~/theme/ui'
+import { tagChip } from '~/theme/ui'
 
 const tagPattern = /^:tag\{label="((?:[^"\\]|\\.)*)"\}/
 const startPattern = /(?<!:):tag\{label="/
@@ -46,16 +46,28 @@ function renderTag(node: { attrs?: Record<string, unknown> }, ...rest: unknown[]
 	return `${prefix}:tag{label="${escape(typeof label === 'string' ? label : '')}"}`
 }
 
+function chipClass(label: unknown) {
+	const name = typeof label === 'string' ? label.trim().toLowerCase() : ''
+	const store = useTagStore()
+	const deleted =
+		Boolean(name) && store.loaded && !store.tags.some((tag) => tag.name.toLowerCase() === name)
+	return tagChip({ state: deleted ? 'deleted' : 'active' })
+}
+
 export const tagMention = Mention.extend({
 	markdownTokenizer: { name: 'mention', level: 'inline', start: startOfTag, tokenize: tokenizeTag },
 	parseMarkdown: (token: any, h: any) =>
 		h.createNode('mention', { mentionSuggestionChar: '#', ...token.attributes }),
 	renderMarkdown: renderTag,
 }).configure({
-	HTMLAttributes: { class: mentionChipClass },
+	HTMLAttributes: { class: tagChip() },
 	renderText: ({ node }) => `#${node.attrs.label ?? ''}`,
 	renderHTML: ({ options, node }) => {
 		const text = `#${node.attrs.label ?? ''}`
-		return ['span', { 'data-type': 'mention', ...options.HTMLAttributes }, text]
+		return [
+			'span',
+			{ 'data-type': 'mention', ...options.HTMLAttributes, class: chipClass(node.attrs.label) },
+			text,
+		]
 	},
 })

@@ -1,8 +1,17 @@
 import type { TVConfig } from '@nuxt/ui'
 import type * as ui from '#build/ui'
+import { tv } from 'tailwind-variants'
 
-export const mentionChipClass =
-	'mention mx-0.5 inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 align-baseline text-xs font-medium whitespace-nowrap text-primary'
+export const tagChip = tv({
+	base: 'mention mx-0.5 inline-flex items-center rounded-md px-1.5 py-0.5 align-baseline text-xs font-medium whitespace-nowrap',
+	variants: {
+		state: {
+			active: 'bg-primary/10 text-primary',
+			deleted: 'bg-muted text-muted',
+		},
+	},
+	defaultVariants: { state: 'active' },
+})
 
 const selectSlots = {
 	slots: {
