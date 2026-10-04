@@ -2,8 +2,10 @@
 import type { ContextMenuItem, DropdownMenuItem, NavigationMenuItem } from '@nuxt/ui'
 import { LazyDialogModal, LazyNoteSpaceFormModal, LazyNoteViewFormModal } from '#components'
 import type { SpaceListItem } from '#shared/types/space'
+import type { TagListItem } from '#shared/types/tag'
 import { sidebarKind } from '#shared/types/view'
 import type { SidebarKind } from '#shared/types/view'
+import type { PinnedTarget } from '~/stores/view'
 
 const { t } = useI18n()
 const appConfig = useAppConfig()
@@ -174,12 +176,38 @@ function pinAction(kind: SidebarKind, id: string): DropdownMenuItem {
 			}
 }
 
-function tagActions(tagId: string): DropdownMenuItem[][] {
-	return [[pinAction(sidebarKind.tag, tagId)]]
+function tagActions(tag: TagListItem): DropdownMenuItem[][] {
+	return [
+		[pinAction(sidebarKind.tag, tag.id)],
+		[
+			{
+				label: t('common.delete'),
+				icon: appConfig.ui.icons.trash,
+				color: 'error' as const,
+				onSelect: () => openDeleteTag(tag),
+			},
+		],
+	]
 }
 
-function pinnedActions(entry: { kind: SidebarKind; id: string }): DropdownMenuItem[][] {
-	return [[pinAction(entry.kind, entry.id)]]
+function entryActions(entry: PinnedTarget): DropdownMenuItem[][] {
+	if (entry.kind === sidebarKind.view) return viewActions(entry.view)
+	if (entry.kind === sidebarKind.space) return spaceActions(entry.space)
+	return tagActions(entry.tag)
+}
+
+function openDeleteTag(tag: TagListItem) {
+	confirmDialog.open({
+		title: t('tag.deleteTitle'),
+		description: t('tag.deleteDescription', { name: tag.name }),
+		icon: appConfig.ui.icons.trash,
+		destructive: true,
+		onConfirm: () => {
+			const noteStore = useNoteStore()
+			noteStore.tagFilter = noteStore.tagFilter.filter((id) => id !== tag.id)
+			void tagStore.deleteTag(tag.id)
+		},
+	})
 }
 
 const builtinItems = computed<NavigationMenuItem[]>(() => [
@@ -256,6 +284,7 @@ const items = computed<NavigationMenuItem[][]>(() => {
 				label: tag.name,
 				icon: appConfig.ui.icons.hash,
 				active: isActive(sidebarKind.tag, tag.id),
+				slot: `tag-${tag.id}`,
 				'data-item-kind': sidebarKind.tag,
 				'data-item-id': tag.id,
 				to: { path: '/', query: { tag: tag.id } },
@@ -281,25 +310,7 @@ const items = computed<NavigationMenuItem[][]>(() => {
 						:key="entry.entry.id"
 						#[`pin-${entry.entry.id}-trailing`]
 					>
-						<div
-							class="pointer-events-none -my-0.5 -mr-1.5 flex opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-data-[state=collapsed]/sidebar:hidden has-data-[state=open]:opacity-100"
-						>
-							<UDropdownMenu
-								:items="pinnedActions(entry)"
-								:content="{ align: 'start' }"
-								:modal="false"
-							>
-								<UButton
-									as="div"
-									:icon="appConfig.ui.icons.ellipsis"
-									color="neutral"
-									variant="ghost"
-									size="xs"
-									class="text-muted hover:bg-accented/50 hover:text-highlighted data-[state=open]:bg-accented/50"
-									@click.stop
-								/>
-							</UDropdownMenu>
-						</div>
+						<NoteSidebarItemMenu :items="entryActions(entry)" />
 					</template>
 
 					<template #views-trailing>
@@ -320,25 +331,7 @@ const items = computed<NavigationMenuItem[][]>(() => {
 					</template>
 
 					<template v-for="view in unpinnedViews" :key="view.id" #[`view-${view.id}-trailing`]>
-						<div
-							class="pointer-events-none -my-0.5 -mr-1.5 flex opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-data-[state=collapsed]/sidebar:hidden has-data-[state=open]:opacity-100"
-						>
-							<UDropdownMenu
-								:items="viewActions(view)"
-								:content="{ align: 'start' }"
-								:modal="false"
-							>
-								<UButton
-									as="div"
-									:icon="appConfig.ui.icons.ellipsis"
-									color="neutral"
-									variant="ghost"
-									size="xs"
-									class="text-muted hover:bg-accented/50 hover:text-highlighted data-[state=open]:bg-accented/50"
-									@click.stop
-								/>
-							</UDropdownMenu>
-						</div>
+						<NoteSidebarItemMenu :items="viewActions(view)" />
 					</template>
 
 					<template #spaces-trailing>
@@ -359,25 +352,11 @@ const items = computed<NavigationMenuItem[][]>(() => {
 					</template>
 
 					<template v-for="space in unpinnedSpaces" :key="space.id" #[`space-${space.id}-trailing`]>
-						<div
-							class="pointer-events-none -my-0.5 -mr-1.5 flex opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 group-data-[state=collapsed]/sidebar:hidden has-data-[state=open]:opacity-100"
-						>
-							<UDropdownMenu
-								:items="spaceActions(space)"
-								:content="{ align: 'start' }"
-								:modal="false"
-							>
-								<UButton
-									as="div"
-									:icon="appConfig.ui.icons.ellipsis"
-									color="neutral"
-									variant="ghost"
-									size="xs"
-									class="text-muted hover:bg-accented/50 hover:text-highlighted data-[state=open]:bg-accented/50"
-									@click.stop
-								/>
-							</UDropdownMenu>
-						</div>
+						<NoteSidebarItemMenu :items="spaceActions(space)" />
+					</template>
+
+					<template v-for="tag in unpinnedTags" :key="tag.id" #[`tag-${tag.id}-trailing`]>
+						<NoteSidebarItemMenu :items="tagActions(tag)" />
 					</template>
 				</UNavigationMenu>
 			</div>

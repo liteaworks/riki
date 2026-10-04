@@ -77,7 +77,9 @@
 		"deleteDescription": "確定要刪除呢個空間嗎？入面嘅筆記會移到未歸類。"
 	},
 	"tag": {
-		"label": "標籤"
+		"label": "標籤",
+		"deleteTitle": "刪除標籤",
+		"deleteDescription": "刪除標籤 {name}？筆記冇事,只會攞走呢個標籤。"
 	},
 	"settings": {
 		"label": "設定",

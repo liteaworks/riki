@@ -77,7 +77,9 @@
 		"deleteDescription": "確定要刪除這個空間嗎？裡面的筆記會移到未歸類。"
 	},
 	"tag": {
-		"label": "標籤"
+		"label": "標籤",
+		"deleteTitle": "刪除標籤",
+		"deleteDescription": "刪除標籤 {name}？筆記內容不受影響,只會移除這個標籤。"
 	},
 	"settings": {
 		"label": "設定",

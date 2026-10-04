@@ -23,5 +23,10 @@ export const useTagStore = defineStore('tag', () => {
 		return await $fetch<TagListItem[]>('/api/tags', { query: { q: query, limit: 10 } })
 	}
 
-	return { tags, pending, loaded, load, search }
+	async function deleteTag(id: string) {
+		await $fetch(`/api/tags/${id}`, { method: 'DELETE' })
+		tags.value = tags.value.filter((tag) => tag.id !== id)
+	}
+
+	return { tags, pending, loaded, load, search, deleteTag }
 })
