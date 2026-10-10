@@ -23,11 +23,11 @@ const appConfig = useAppConfig()
 		<SettingsItem :label="$t('settings.preferences.timeZone')" :icon="appConfig.ui.icons.timeZone">
 			<SettingsTimezoneSelect v-model="state.timeZone" />
 		</SettingsItem>
-		<!-- <SettingsItem
+		<SettingsItem
 			:label="$t('settings.preferences.timeFormat')"
 			:icon="appConfig.ui.icons.timeFormat"
 		>
 			<SettingsTimeFormatSelect v-model="state.timeFormat" />
-		</SettingsItem> -->
+		</SettingsItem>
 	</SettingsItemGroup>
 </template>

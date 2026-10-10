@@ -139,21 +139,6 @@ const absoluteHint = computed(() => {
 	if (updatedSecond === createdSecond) return createdAt
 	return `${createdAt}\n${$t('note.updatedAt', { time: formatAbsoluteTime(props.note.updatedAt, locale.value, timeZone) })}`
 })
-
-const relativeHint = computed(() => {
-	const timeZone = resolveTimeZone(settings.value.timeZone)
-	const createdAt = $t('note.createdAt', {
-		time: formatRelativeTime(props.note.createdAt, locale.value, timeZone),
-	})
-	const createdSecond = Math.floor(new Date(props.note.createdAt).getTime() / 1000)
-	const updatedSecond = Math.floor(new Date(props.note.updatedAt).getTime() / 1000)
-	if (updatedSecond === createdSecond) return createdAt
-	return `${createdAt}\n${$t('note.updatedAt', { time: formatRelativeTime(props.note.updatedAt, locale.value, timeZone) })}`
-})
-
-const timeTooltip = computed(() =>
-	settings.value.timeFormat === 'relative' ? absoluteHint.value : relativeHint.value,
-)
 </script>
 
 <template>
@@ -182,7 +167,7 @@ const timeTooltip = computed(() =>
 							@click.stop="onRetry"
 						/>
 					</UTooltip>
-					<UTooltip :text="timeTooltip" :ui="{ content: 'whitespace-pre-line' }">
+					<UTooltip :text="absoluteHint" :ui="{ content: 'whitespace-pre-line' }">
 						<span>{{ noteTime }}</span>
 					</UTooltip>
 				</div>

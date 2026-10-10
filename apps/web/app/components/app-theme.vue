@@ -57,7 +57,7 @@ const locale = defineLocale<Messages>({
 		colorMode: {
 			dark: $t('settings.preferences.colorMode.dark'),
 			light: $t('settings.preferences.colorMode.light'),
-			system: $t('settings.preferences.colorMode.system'),
+			system: $t('settings.followSystem'),
 			switchToDark: '',
 			switchToLight: '',
 		},

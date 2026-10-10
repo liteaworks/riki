@@ -43,23 +43,39 @@ export function formatAbsoluteTime(
 	}).format(time)
 }
 
-export function formatAbsoluteTimeLong(
+function calendarDay(value: Date, timeZone: string | undefined): number {
+	const parts = new Intl.DateTimeFormat('en-CA', {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		timeZone,
+	}).formatToParts(value)
+	const get = (type: 'year' | 'month' | 'day') =>
+		Number(parts.find((part) => part.type === type)?.value)
+	return Date.UTC(get('year'), get('month') - 1, get('day'))
+}
+
+// The list line has one row to spend: drop whatever the viewer can infer.
+export function formatCompactTime(
 	value: string | number | Date,
 	locale: string,
 	timeZone?: string,
 ): string {
 	const time = new Date(value)
 	if (Number.isNaN(time.getTime())) return ''
-	return new Intl.DateTimeFormat(resolveLocale(locale), {
-		year: 'numeric',
-		month: 'short',
-		day: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit',
-		second: '2-digit',
-		timeZoneName: 'short',
-		timeZone,
-	}).format(time)
+	const day = calendarDay(time, timeZone)
+	const today = calendarDay(new Date(), timeZone)
+	const yearStart = Date.UTC(new Date(today).getUTCFullYear(), 0, 1)
+	const dayDelta = Math.round((day - today) / 86400000)
+	const options: Intl.DateTimeFormatOptions =
+		dayDelta === 0
+			? { timeZone, timeStyle: 'short' }
+			: dayDelta >= -6
+				? { timeZone, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }
+				: day >= yearStart
+					? { timeZone, month: 'short', day: 'numeric' }
+					: { timeZone, dateStyle: 'medium' }
+	return new Intl.DateTimeFormat(resolveLocale(locale), options).format(time)
 }
 
 export type TimeFormat = 'relative' | 'absolute'
@@ -71,7 +87,7 @@ export function formatTime(
 	timeZone?: string,
 ): string {
 	if (format === 'relative') return formatRelativeTime(value, locale, timeZone)
-	return formatAbsoluteTime(value, locale, timeZone)
+	return formatCompactTime(value, locale, timeZone)
 }
 
 export function resolveTimeZone(timeZone: string | undefined): string | undefined {

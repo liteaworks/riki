@@ -1,5 +1,5 @@
 import { skipHydrate } from 'pinia'
-import { localKeys } from '../utils/local-cache'
+import { localKeys } from '~/utils/local-cache'
 
 const DRAFT_KIND = 'rikki.draft'
 const DRAFT_VERSION = 1

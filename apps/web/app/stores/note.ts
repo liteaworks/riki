@@ -1,7 +1,7 @@
 import { skipHydrate } from 'pinia'
 import { noteStatus, noteVisibility } from '#shared/types/note'
-import { localKeys } from '../utils/local-cache'
-import { toEpoch } from '../utils/time'
+import { localKeys } from '~/utils/local-cache'
+import { toEpoch } from '~/utils/time'
 import type {
 	CreateNoteInput,
 	ListNotesResponse,
